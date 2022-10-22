@@ -1,6 +1,9 @@
 import { css, keyframes } from '@emotion/react'
+import { useEffect, useRef, useState } from 'react'
 
 const AnimatedGradientButton = () => {
+  const [isHover, setIsHover] = useState(false)
+
   const spinGradient = keyframes`
     0% {
       transform: scaleX(8) scaleY(1.5) rotate(0deg);
@@ -45,6 +48,12 @@ const AnimatedGradientButton = () => {
           text-decoration: none;
           cursor: pointer;
         `}
+        onPointerEnter={() => {
+          setIsHover(true)
+        }}
+        onPointerLeave={() => {
+          setIsHover(false)
+        }}
       >
         <div
           css={css`
@@ -97,8 +106,17 @@ const AnimatedGradientButton = () => {
             />
             <span
               css={css`
-                background-color: #f81ce5;
-                color: #fff;
+                opacity: ${isHover ? '0.6' : '0'};
+                transition: opacity 0.9s ease;
+                background: #fff;
+
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border-radius: 9999px;
+                display: block;
               `}
             />
 
