@@ -49,127 +49,129 @@ const AnimatedGradientButton = (props: Props) => {
   }
   `
 
-  const styles = {
-    // containers
-    container: css({
-      position: 'relative',
-
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-
-      borderRadius: '9999px',
-      cursor: 'pointer',
-
-      // show border on hover
-      '&:hover .borderHover': {
-        opacity: 0.6,
-      },
-
-      '&:hover .border': {
-        animationPlayState: 'paused',
-      },
-    }),
-    link: css({
-      position: 'relative',
-      padding: `${props.borderThickness}`,
-
-      display: 'block',
-      transform: 'translateZ(10px)',
-
-      borderRadius: '9999px',
-      overflow: 'hidden',
-
-      cursor: 'pointer',
-    }),
-
-    // border
-    borderHover: css({
-      // only exists when hovered (handled in 'container')
-
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      right: '0',
-      bottom: '0',
-
-      opacity: 0,
-      backgroundColor: `${props.borderHoverColor}`,
-
-      transition: 'opacity 0.9s ease',
-    }),
-
-    borderAnimation: css({
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      right: '0',
-      bottom: '0',
-
-      color: '#fff',
-      background: `conic-gradient(transparent 135deg, ${props.borderColor} 180deg, transparent 255deg), conic-gradient(transparent -45deg, ${props.borderColor} 0deg, transparent 75deg)`,
-      filter: 'blur(6px)',
-
-      animation: `${spinGradient} 5s linear infinite`,
-    }),
-
-    // text + icon
-    textContainer: css({
-      position: 'relative',
-      minWidth: '188px',
-      height: '48px',
-      padding: '0 20px',
-
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-
-      color: `${props.textColor}`,
-      backgroundColor: `${props.backgroundColor}`,
-      borderRadius: '24px',
-    }),
-    text: css({
-      paddingBottom: '2px',
-
-      fontFamily: `${props.fontFamily}`,
-      fontWeight: `${props.fontWeight}`,
-      fontStyle: `${props.fontStyle}`,
-    }),
-
-    // outerglow
-    glowAnimation: css({
-      position: 'absolute',
-      top: 0,
-      height: '100%',
-      width: '100%',
-      opacity: 0.4,
-
-      background:
-        'radial-gradient(transparent,transparent,#fff,transparent,transparent)',
-      filter: 'blur(32px)',
-      transform: 'translateZ(0)', // removes ugly border
-      backgroundSize: '300% 300%',
-
-      animation: `${translateGlow} 20s linear infinite`,
-    }),
-  }
-
   return (
-    <div css={styles.container}>
+    <div
+      css={css({
+        position: 'relative',
+
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+
+        borderRadius: '9999px',
+        cursor: 'pointer',
+
+        // show border on hover
+        '&:hover .borderHover': {
+          opacity: 0.6,
+        },
+
+        '&:hover .border': {
+          animationPlayState: 'paused',
+        },
+      })}
+    >
       {/* outer glow animation */}
-      <span css={styles.glowAnimation} />
+      <span
+        css={css({
+          position: 'absolute',
+          top: 0,
+          height: '100%',
+          width: '100%',
+          opacity: 0.4,
+
+          background:
+            'radial-gradient(transparent,transparent,#fff,transparent,transparent)',
+          filter: 'blur(32px)',
+          transform: 'translateZ(0)', // removes ugly border
+          backgroundSize: '300% 300%',
+
+          animation: `${translateGlow} 20s linear infinite`,
+        })}
+      />
 
       {/* link */}
-      <a href="https://www.google.com" target={'_blank'} css={styles.link}>
+      <a
+        href="https://www.google.com"
+        target={'_blank'}
+        css={css({
+          position: 'relative',
+          padding: `${props.borderThickness}`,
+
+          display: 'block',
+          transform: 'translateZ(10px)',
+
+          borderRadius: '9999px',
+          overflow: 'hidden',
+
+          cursor: 'pointer',
+        })}
+      >
         {/* only exists as borders, get hover event from div container */}
         {/* hover shows border */}
-        <span css={styles.borderHover} className="borderHover" />
+        <span
+          css={css({
+            // only exists when hovered (handled in 'container')
+
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+
+            opacity: 0,
+            backgroundColor: `${props.borderHoverColor}`,
+
+            transition: 'opacity 0.9s ease',
+          })}
+          className="borderHover"
+        />
         {/* border animation */}
-        <span css={styles.borderAnimation} className="border" />
+        <span
+          css={css({
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+
+            color: '#fff',
+            background: `conic-gradient(transparent 135deg, ${props.borderColor} 180deg, transparent 255deg), conic-gradient(transparent -45deg, ${props.borderColor} 0deg, transparent 75deg)`,
+            filter: 'blur(6px)',
+
+            animation: `${spinGradient} 5s linear infinite`,
+          })}
+          className="border"
+        />
 
         {/* text + icon */}
-        <span css={styles.textContainer}>
-          <p css={styles.text}>Register now</p>
+        <span
+          css={css({
+            position: 'relative',
+            minWidth: '188px',
+            height: '48px',
+            padding: '0 20px',
+
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+
+            color: `${props.textColor}`,
+            backgroundColor: `${props.backgroundColor}`,
+            borderRadius: '24px',
+          })}
+        >
+          <p
+            css={css({
+              paddingBottom: '2px',
+
+              fontFamily: `${props.fontFamily}`,
+              fontWeight: `${props.fontWeight}`,
+              fontStyle: `${props.fontStyle}`,
+            })}
+          >
+            Register now
+          </p>
           <svg
             fill="none"
             height="16"
