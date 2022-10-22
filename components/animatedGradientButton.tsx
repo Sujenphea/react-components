@@ -2,8 +2,6 @@ import { css, keyframes } from '@emotion/react'
 import { useEffect, useRef, useState } from 'react'
 
 const AnimatedGradientButton = () => {
-  const [isHover, setIsHover] = useState(false)
-
   const spinGradient = keyframes`
     0% {
       transform: scaleX(8) scaleY(1.5) rotate(0deg);
@@ -44,6 +42,10 @@ const AnimatedGradientButton = () => {
       borderRadius: '9999px',
 
       cursor: 'pointer',
+
+      '&:hover .borderHover': {
+        opacity: 0.6,
+      },
     }),
     link: css({
       textDecoration: 'none',
@@ -60,15 +62,10 @@ const AnimatedGradientButton = () => {
     }),
 
     // border
-    borderAnimationDiv: css({
-      animation: `${spinGradient} 5s linear infinite`,
-
-      filter: 'blur(6px)',
-
-      transformOrigin: 'center center',
-      background: `conic-gradient(transparent 135deg,#fff 180deg,transparent 255deg), conic-gradient(transparent -45deg, #fff 0deg, transparent 75deg)`,
-
-      color: '#fff',
+    borderHover: css({
+      opacity: 0,
+      transition: 'opacity 0.9s ease',
+      background: '#fff',
 
       position: 'absolute',
       top: '0',
@@ -78,10 +75,16 @@ const AnimatedGradientButton = () => {
       borderRadius: '9999px',
       display: 'block',
     }),
-    borderHoverDiv: css({
-      opacity: isHover ? '0.6' : '0',
-      transition: 'opacity 0.9s ease',
-      background: '#fff',
+
+    borderAnimation: css({
+      animation: `${spinGradient} 5s linear infinite`,
+
+      filter: 'blur(6px)',
+
+      transformOrigin: 'center center',
+      background: `conic-gradient(transparent 135deg,#fff 180deg,transparent 255deg), conic-gradient(transparent -45deg, #fff 0deg, transparent 75deg)`,
+
+      color: '#fff',
 
       position: 'absolute',
       top: '0',
@@ -115,7 +118,7 @@ const AnimatedGradientButton = () => {
     }),
 
     // outerglow
-    glowAnimationDiv: css({
+    glowAnimation: css({
       isolation: 'isolate',
       background:
         'radial-gradient(transparent,transparent,#fff,transparent,transparent)',
@@ -135,19 +138,19 @@ const AnimatedGradientButton = () => {
   }
 
   return (
-    <div
-      css={styles.container}
-      onPointerEnter={() => {
-        setIsHover(true)
-      }}
-      onPointerLeave={() => {
-        setIsHover(false)
-      }}
-    >
-      <a href="www.google.com" css={styles.link}>
-        <span css={styles.borderAnimationDiv} />
-        <span css={styles.borderHoverDiv} />
+    <div css={styles.container}>
+      {/* outer glow animation */}
+      <span css={styles.glowAnimation} />
 
+      {/* link */}
+      <a href="https://www.google.com" target={'_blank'} css={styles.link}>
+        {/* only exists as borders, get hover event from div container */}
+        {/* hover shows border */}
+        <span css={styles.borderHover} className="borderHover" />
+        {/* border animation */}
+        <span css={styles.borderAnimation} />
+
+        {/* text + icon */}
         <span css={styles.textContainer}>
           <p css={styles.text}>Register now</p>
           <svg
@@ -174,7 +177,6 @@ const AnimatedGradientButton = () => {
           </svg>
         </span>
       </a>
-      <span css={styles.glowAnimationDiv}></span>
     </div>
   )
 }
