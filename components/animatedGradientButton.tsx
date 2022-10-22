@@ -4,7 +4,21 @@
 
 import { css, keyframes } from '@emotion/react'
 
-const AnimatedGradientButton = () => {
+type Props = {
+  textColor: string
+  iconColor: string
+  backgroundColor: string
+
+  borderColor: string
+  borderHoverColor: string
+  borderThickness: string
+
+  fontFamily: string
+  fontWeight: number | string
+  fontStyle: string
+}
+
+const AnimatedGradientButton = (props: Props) => {
   const spinGradient = keyframes`
     0% {
       transform: scaleX(8) scaleY(1.5) rotate(0deg);
@@ -51,10 +65,14 @@ const AnimatedGradientButton = () => {
       '&:hover .borderHover': {
         opacity: 0.6,
       },
+
+      '&:hover .border': {
+        animationPlayState: 'paused',
+      },
     }),
     link: css({
       position: 'relative',
-      padding: '1px',
+      padding: `${props.borderThickness}`,
 
       display: 'block',
       transform: 'translateZ(10px)',
@@ -76,7 +94,7 @@ const AnimatedGradientButton = () => {
       bottom: '0',
 
       opacity: 0,
-      background: '#fff',
+      backgroundColor: `${props.borderHoverColor}`,
 
       transition: 'opacity 0.9s ease',
     }),
@@ -89,7 +107,7 @@ const AnimatedGradientButton = () => {
       bottom: '0',
 
       color: '#fff',
-      background: `conic-gradient(transparent 135deg, #fff 180deg, transparent 255deg), conic-gradient(transparent -45deg, #fff 0deg, transparent 75deg)`,
+      background: `conic-gradient(transparent 135deg, ${props.borderColor} 180deg, transparent 255deg), conic-gradient(transparent -45deg, ${props.borderColor} 0deg, transparent 75deg)`,
       filter: 'blur(6px)',
 
       animation: `${spinGradient} 5s linear infinite`,
@@ -105,14 +123,17 @@ const AnimatedGradientButton = () => {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      zIndex: 1000,
 
-      color: '#fff',
-      background: '#000',
+      color: `${props.textColor}`,
+      backgroundColor: `${props.backgroundColor}`,
       borderRadius: '24px',
     }),
     text: css({
       paddingBottom: '2px',
+
+      fontFamily: `${props.fontFamily}`,
+      fontWeight: `${props.fontWeight}`,
+      fontStyle: `${props.fontStyle}`,
     }),
 
     // outerglow
@@ -144,7 +165,7 @@ const AnimatedGradientButton = () => {
         {/* hover shows border */}
         <span css={styles.borderHover} className="borderHover" />
         {/* border animation */}
-        <span css={styles.borderAnimation} />
+        <span css={styles.borderAnimation} className="border" />
 
         {/* text + icon */}
         <span css={styles.textContainer}>
@@ -158,14 +179,14 @@ const AnimatedGradientButton = () => {
           >
             <path
               d="M3.33337 8H12.6667"
-              stroke="#fff"
+              stroke={`${props.iconColor}`}
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="1.5"
             ></path>
             <path
               d="M8 3.33333L12.6667 8L8 12.6667"
-              stroke="#fff"
+              stroke={`${props.iconColor}`}
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="1.5"
@@ -178,3 +199,17 @@ const AnimatedGradientButton = () => {
 }
 
 export default AnimatedGradientButton
+
+AnimatedGradientButton.defaultProps = {
+  textColor: '#fff',
+  iconColor: '#fff',
+  backgroundColor: '#000',
+
+  borderColor: '#fff',
+  borderHoverColor: '#fff',
+  borderThickness: '1px',
+
+  fontFamily: 'inherit',
+  fontWeight: 'normal',
+  fontStyle: 'normal',
+}
