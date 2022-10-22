@@ -34,172 +34,147 @@ const AnimatedGradientButton = () => {
   }
   `
 
+  const styles = {
+    // containers
+    container: css({
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      borderRadius: '9999px',
+
+      cursor: 'pointer',
+    }),
+    link: css({
+      textDecoration: 'none',
+      cursor: 'pointer',
+
+      borderRadius: '9999px',
+      padding: '1px',
+      margin: '-1px',
+      position: 'relative',
+      overflow: 'hidden',
+      display: 'block',
+      isolation: 'isolate',
+      transform: 'translateZ(10px)',
+    }),
+
+    // border
+    borderAnimationDiv: css({
+      animation: `${spinGradient} 5s linear infinite`,
+
+      filter: 'blur(6px)',
+
+      transformOrigin: 'center center',
+      background: `conic-gradient(transparent 135deg,#fff 180deg,transparent 255deg), conic-gradient(transparent -45deg, #fff 0deg, transparent 75deg)`,
+
+      color: '#fff',
+
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      borderRadius: '9999px',
+      display: 'block',
+    }),
+    borderHoverDiv: css({
+      opacity: isHover ? '0.6' : '0',
+      transition: 'opacity 0.9s ease',
+      background: '#fff',
+
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      borderRadius: '9999px',
+      display: 'block',
+    }),
+
+    // text + icon
+    textContainer: css({
+      position: 'relative',
+      zIndex: 1000,
+
+      minWidth: '188px',
+      height: '48px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '0 20px',
+      color: '#fff',
+      background: '#000',
+      borderRadius: '24px',
+      gridGap: '8px',
+      gap: '8px',
+    }),
+    text: css({
+      textDecoration: 'none',
+      paddingBottom: '2px',
+    }),
+
+    // outerglow
+    glowAnimationDiv: css({
+      isolation: 'isolate',
+      background:
+        'radial-gradient(transparent,transparent,#fff,transparent,transparent)',
+
+      opacity: 0.4,
+      position: 'absolute',
+      top: 0,
+      height: '100%',
+      width: '100%',
+      filter: 'blur(32px)',
+      transform: 'translateZ(0)',
+      backgroundSize: '300% 300%',
+      borderRadius: '9999px',
+
+      animation: `${translateGlow} 20s linear infinite`,
+    }),
+  }
+
   return (
     <div
-      css={css`
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `}
+      css={styles.container}
+      onPointerEnter={() => {
+        setIsHover(true)
+      }}
+      onPointerLeave={() => {
+        setIsHover(false)
+      }}
     >
-      <a
-        href="www.google.com"
-        css={css`
-          text-decoration: none;
-          cursor: pointer;
-        `}
-        onPointerEnter={() => {
-          setIsHover(true)
-        }}
-        onPointerLeave={() => {
-          setIsHover(false)
-        }}
-      >
-        <div
-          css={css`
-            position: relative;
-            pointer-events: none;
-            border-radius: 9999px;
-            box-shadow: 0 2px 4px 4gba (0, 0, 0, 0.1);
-            display: block;
-          `}
-        >
-          <span
-            css={css`
-              border-radius: 9999px;
-              padding: 1px;
-              margin: -1px;
-              position: relative;
-              overflow: hidden;
-              display: block;
-              isolation: isolate;
-              transform: translateZ(10px);
-            `}
+      <a href="www.google.com" css={styles.link}>
+        <span css={styles.borderAnimationDiv} />
+        <span css={styles.borderHoverDiv} />
+
+        <span css={styles.textContainer}>
+          <p css={styles.text}>Register now</p>
+          <svg
+            fill="none"
+            height="16"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <span
-              css={css`
-                animation: ${spinGradient} 5s linear infinite;
-                filter: blur(6px);
-                background: conic-gradient(
-                    transparent 135deg,
-                    #fff 180deg,
-                    transparent 255deg
-                  ),
-                  conic-gradient(
-                    transparent -45deg,
-                    #fff 0deg,
-                    transparent 75deg
-                  );
-
-                transform-origin: center center;
-
-                color: #fff;
-
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                border-radius: 9999px;
-                display: block;
-              `}
-            />
-            <span
-              css={css`
-                opacity: ${isHover ? '0.6' : '0'};
-                transition: opacity 0.9s ease;
-                background: #fff;
-
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                border-radius: 9999px;
-                display: block;
-              `}
-            />
-
-            <span
-              css={css`
-                position: relative;
-                z-index: 1000;
-              `}
-            >
-              <div
-                css={css`
-                  min-width: 188px;
-                  height: 48px;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  padding: 0 20px;
-                  color: #fff;
-                  background: #000;
-                  border-radius: 24px;
-                  grid-gap: 8px;
-                  gap: 8xp;
-                `}
-              >
-                <p
-                  css={css`
-                    text-decoration: none;
-                    padding-bottom: 2px;
-                  `}
-                >
-                  Register now
-                </p>
-                <svg
-                  fill="none"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3.33337 8H12.6667"
-                    stroke="#fff"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                  ></path>
-                  <path
-                    d="M8 3.33333L12.6667 8L8 12.6667"
-                    stroke="#fff"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                  ></path>
-                </svg>
-              </div>
-            </span>
-          </span>
-          <span
-            css={css`
-              isolation: isolate;
-              background: radial-gradient(
-                transparent,
-                transparent,
-                #fff,
-                transparent,
-                transparent
-              );
-
-              opacity: 0.4;
-              position: absolute;
-              top: 0;
-              height: 100%;
-              width: 100%;
-              filter: blur(32px);
-              transform: translateZ(0);
-              background-size: 300% 300%;
-              border-radius: 9999px;
-
-              animation: ${translateGlow} 20s linear infinite;
-            `}
-          ></span>
-        </div>
+            <path
+              d="M3.33337 8H12.6667"
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            ></path>
+            <path
+              d="M8 3.33333L12.6667 8L8 12.6667"
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            ></path>
+          </svg>
+        </span>
       </a>
+      <span css={styles.glowAnimationDiv}></span>
     </div>
   )
 }
