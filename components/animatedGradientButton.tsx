@@ -1,5 +1,8 @@
+/**
+ * animated glowy button with animating border
+ */
+
 import { css, keyframes } from '@emotion/react'
-import { useEffect, useRef, useState } from 'react'
 
 const AnimatedGradientButton = () => {
   const spinGradient = keyframes`
@@ -35,103 +38,96 @@ const AnimatedGradientButton = () => {
   const styles = {
     // containers
     container: css({
+      position: 'relative',
+
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      position: 'relative',
-      borderRadius: '9999px',
 
+      borderRadius: '9999px',
       cursor: 'pointer',
 
+      // show border on hover
       '&:hover .borderHover': {
         opacity: 0.6,
       },
     }),
     link: css({
-      textDecoration: 'none',
-      cursor: 'pointer',
+      position: 'relative',
+      padding: '1px',
+
+      display: 'block',
+      transform: 'translateZ(10px)',
 
       borderRadius: '9999px',
-      padding: '1px',
-      margin: '-1px',
-      position: 'relative',
       overflow: 'hidden',
-      display: 'block',
-      isolation: 'isolate',
-      transform: 'translateZ(10px)',
+
+      cursor: 'pointer',
     }),
 
     // border
     borderHover: css({
-      opacity: 0,
-      transition: 'opacity 0.9s ease',
-      background: '#fff',
+      // only exists when hovered (handled in 'container')
 
       position: 'absolute',
       top: '0',
       left: '0',
       right: '0',
       bottom: '0',
-      borderRadius: '9999px',
-      display: 'block',
+
+      opacity: 0,
+      background: '#fff',
+
+      transition: 'opacity 0.9s ease',
     }),
 
     borderAnimation: css({
-      animation: `${spinGradient} 5s linear infinite`,
-
-      filter: 'blur(6px)',
-
-      transformOrigin: 'center center',
-      background: `conic-gradient(transparent 135deg,#fff 180deg,transparent 255deg), conic-gradient(transparent -45deg, #fff 0deg, transparent 75deg)`,
-
-      color: '#fff',
-
       position: 'absolute',
       top: '0',
       left: '0',
       right: '0',
       bottom: '0',
-      borderRadius: '9999px',
-      display: 'block',
+
+      color: '#fff',
+      background: `conic-gradient(transparent 135deg, #fff 180deg, transparent 255deg), conic-gradient(transparent -45deg, #fff 0deg, transparent 75deg)`,
+      filter: 'blur(6px)',
+
+      animation: `${spinGradient} 5s linear infinite`,
     }),
 
     // text + icon
     textContainer: css({
       position: 'relative',
-      zIndex: 1000,
-
       minWidth: '188px',
       height: '48px',
+      padding: '0 20px',
+
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '0 20px',
+      zIndex: 1000,
+
       color: '#fff',
       background: '#000',
       borderRadius: '24px',
-      gridGap: '8px',
-      gap: '8px',
     }),
     text: css({
-      textDecoration: 'none',
       paddingBottom: '2px',
     }),
 
     // outerglow
     glowAnimation: css({
-      isolation: 'isolate',
-      background:
-        'radial-gradient(transparent,transparent,#fff,transparent,transparent)',
-
-      opacity: 0.4,
       position: 'absolute',
       top: 0,
       height: '100%',
       width: '100%',
+      opacity: 0.4,
+
+      background:
+        'radial-gradient(transparent,transparent,#fff,transparent,transparent)',
       filter: 'blur(32px)',
-      transform: 'translateZ(0)',
+      transform: 'translateZ(0)', // removes ugly border
       backgroundSize: '300% 300%',
-      borderRadius: '9999px',
 
       animation: `${translateGlow} 20s linear infinite`,
     }),
