@@ -1,16 +1,94 @@
 import { css } from '@emotion/react'
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 
-import AnimatedGradientButton from '../components/animatedGradientButton'
+const AnimatedGradientButton = dynamic(
+  () => import('../components/animatedGradientButton'),
+  {
+    ssr: true,
+  }
+)
 
 export default function Home() {
+  /* --------------------------------- states --------------------------------- */
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  // components
+  const [animatedGradientButtonOpen, setAnimatedGradientButtonOpen] =
+    useState(false)
+
   /* --------------------------------- display -------------------------------- */
+  // navigation bar
+  const navBarDisplay = () => {
+    return (
+      <div
+        css={css({
+          position: 'absolute',
+
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+
+          color: 'white',
+          backgroundColor: 'rgba(0.2, 0.2, 0.2, 0)',
+
+          '& > *': {
+            padding: '20px',
+            borderRight: '0.5px solid grey',
+            borderBottom: '0.5px solid grey',
+            textAlign: 'center',
+          },
+        })}
+      >
+        <button
+          onClick={() => {
+            setAnimatedGradientButtonOpen(true)
+          }}
+        >
+          animated gradient button
+        </button>
+      </div>
+    )
+  }
+
+  // components
+  const componentsDisplay = () => {
+    return (
+      <div
+        css={css({
+          width: '100vw',
+          height: '100vh',
+
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '20px',
+
+          backgroundColor: 'black',
+          color: 'white',
+        })}
+      >
+        {animatedGradientButtonOpen && (
+          <AnimatedGradientButton>
+            <div css={css({ padding: '8px 24px' })}>
+              <div>hiasfasdfaasdfkljh kajshdf lkahsdflkj asdf jklahs sd</div>
+            </div>
+          </AnimatedGradientButton>
+        )}
+      </div>
+    )
+  }
+
   // modal
   const openModalButtonDisplay = () => {
     return (
       <button
+        css={css({
+          position: 'absolute',
+          top: '15vh',
+          left: '10px',
+
+          color: 'white',
+        })}
         onClick={() => {
           setIsModalOpen(true)
         }}
@@ -61,29 +139,14 @@ export default function Home() {
   /* ---------------------------------- main ---------------------------------- */
   return (
     <>
-      <div
-        css={css({
-          width: '100vw',
-          height: '100vh',
+      {/* nav bar */}
+      {navBarDisplay()}
 
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '20px',
+      {/* components */}
+      {componentsDisplay()}
 
-          backgroundColor: 'black',
-          color: 'white',
-        })}
-      >
-        <AnimatedGradientButton>
-          <div css={css({ padding: '8px 24px' })}>
-            <div>hiasfasdfaasdfkljh kajshdf lkahsdflkj asdf jklahs sd</div>
-          </div>
-        </AnimatedGradientButton>
-
-        {/* open modal button */}
-        {openModalButtonDisplay()}
-      </div>
+      {/* open modal button */}
+      {openModalButtonDisplay()}
 
       {/* modal */}
       {modalDisplay()}
