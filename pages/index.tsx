@@ -76,7 +76,7 @@ export default function Home() {
           </AnimatedGradientButton>
         )}
 
-        <Clock />
+        <Clock time={'2022-10-25T10:30:00+00:00'} />
       </div>
     )
   }

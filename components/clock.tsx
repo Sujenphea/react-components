@@ -1,12 +1,42 @@
 import { css } from '@emotion/react'
 import { motion, useAnimationControls } from 'framer-motion'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 let timingFunction = { ease: [0.66, 0.15, 0.1, 0.95], duration: 0.3 }
 
-export default function Clock() {
+export default function Clock(props: { time: string }) {
+  /* -------------------------------- variables ------------------------------- */
+  const [countdown, setCountdown] = useState(0)
+
+  /* ---------------------------------- hooks --------------------------------- */
+  useEffect(() => {
+    let getTime = () => {
+      let currentTime = new Date()
+      let timezoneOffset = 6e4 * currentTime.getTimezoneOffset()
+      let countdown =
+        new Date(props.time).getTime() - currentTime.getTime() + timezoneOffset
+
+      setCountdown(countdown)
+    }
+
+    let timer = setInterval(() => {
+      getTime()
+    }, 1e3)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const countdownObject = useMemo(() => {
+    return {
+      days: Math.floor(countdown / 864e5),
+      hours: Math.floor((countdown / 36e5) % 24),
+      minutes: Math.floor((countdown / 1e3 / 60) % 60),
+      seconds: Math.floor((countdown / 1e3) % 60),
+    }
+  }, [countdown])
+
   /* --------------------------------- display -------------------------------- */
-  const digitDisplay = (props: { value: number }) => {
+  const digitDisplay = (props: { digit: string }) => {
     const storedValue = useRef(0)
     const controls = useAnimationControls()
     const controls2 = useAnimationControls()
@@ -34,8 +64,8 @@ export default function Clock() {
           controls2.start({ y: 24, opacity: 0.3, scaleY: 0 })
         })
 
-      storedValue.current = props.value
-    }, [])
+      storedValue.current = props.digit
+    }, [props.digit])
 
     return (
       <div
@@ -62,13 +92,15 @@ export default function Clock() {
         <motion.div
           animate={controls}
           transition={timingFunction}
-          children={props.value}
+          children={props.digit}
         />
       </div>
     )
   }
 
-  const unitTimeDisplay = () => {
+  const unitTimeDisplay = (props: { time: number; unit: string }) => {
+    const time = props.time.toString().padStart(2, '0')
+
     return (
       <div
         css={css({
@@ -89,9 +121,9 @@ export default function Clock() {
             fontSize: '40px',
           })}
         >
-          {digitDisplay({ value: 2 })}
-
-          {digitDisplay({ value: 3 })}
+          {time.split('').map((v) => {
+            return digitDisplay({ digit: v })
+          })}
         </div>
 
         {/* label */}
@@ -101,7 +133,7 @@ export default function Clock() {
             color: '#888',
           })}
         >
-          Minutes
+          {props.unit}
         </div>
       </div>
     )
@@ -130,7 +162,7 @@ export default function Clock() {
         :
       </div>
 
-      {unitTimeDisplay()}
+      {unitTimeDisplay({ time: countdownObject.seconds, unit: 'seconds' })}
       {/* {digitDisplay({ value: 2 })} */}
     </div>
   )
