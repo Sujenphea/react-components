@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
+import Clock from '../components/clock'
 
 const AnimatedGradientButton = dynamic(
   () => import('../components/animatedGradientButton'),
@@ -74,6 +75,8 @@ export default function Home() {
             </div>
           </AnimatedGradientButton>
         )}
+
+        <Clock />
       </div>
     )
   }
