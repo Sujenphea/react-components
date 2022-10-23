@@ -1,35 +1,19 @@
-/**
- * animated glowy button with animating border
- */
-
 import { css, keyframes } from '@emotion/react'
+import { useState } from 'react'
 
-type Props = {
-  textColor: string
-  iconColor: string
-  backgroundColor: string
-
-  borderColor: string
-  borderHoverColor: string
-  borderThickness: string
-
-  fontFamily: string
-  fontWeight: number | string
-  fontStyle: string
-}
-
-const AnimatedGradientButton = (props: Props) => {
-  const spinGradient = keyframes`
-    0% {
-      transform: scaleX(8) scaleY(1.5) rotate(0deg);
-    }
-    to {
-      transform: scaleX(8) scaleY(1.5) rotate(1turn);
-    }
+/* -------------------------------------------------------------------------- */
+/*                                  constants                                 */
+/* -------------------------------------------------------------------------- */
+const spinGradient = keyframes`
+  0% {
+    transform: scaleX(8) scaleY(1.5) rotate(0deg);
   }
-  `
+  to {
+    transform: scaleX(8) scaleY(1.5) rotate(1turn);
+  }
+`
 
-  const translateGlow = keyframes`
+const translateGlow = keyframes`
   0% {
     background-position: -20% -20%;
   }
@@ -45,171 +29,157 @@ const AnimatedGradientButton = (props: Props) => {
   100% {
     background-position: -20% -20%;
   }
-  `
+`
 
-  return (
-    <div
-      css={css({
-        position: 'relative',
+/* -------------------------------------------------------------------------- */
+/*                                   button                                   */
+/* -------------------------------------------------------------------------- */
+/**
+ * Animated glowy button with animating border
+ */
+export default function AnimatedGradientButton(props: {
+  textColor?: string
+  iconColor?: string
+  backgroundColor?: string
 
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+  borderColor?: string
+  borderHoverColor?: string
+  borderThickness?: string
 
-        borderRadius: '9999px',
-        cursor: 'pointer',
+  animateOuterGlow?: boolean
+  outerGlowColor?: string
 
-        // show border on hover
-        '&:hover .borderHover': {
-          opacity: 0.6,
-        },
+  fontFamily?: string
+  fontWeight?: number | string
+  fontStyle?: string
+  children?: React.ReactChild
+}) {
+  /* --------------------------------- states --------------------------------- */
+  const [hovering, setHovering] = useState(false)
 
-        '&:hover .border': {
-          animationPlayState: 'paused',
-        },
-      })}
-    >
-      {/* outer glow animation */}
+  /* --------------------------------- display -------------------------------- */
+  // border display
+  const outerGlowDisplay = () => {
+    return (
       <span
         css={css({
           position: 'absolute',
           top: 0,
           height: '100%',
           width: '100%',
-          opacity: 0.4,
+          opacity: 1.0,
 
-          background:
-            'radial-gradient(transparent,transparent,#fff,transparent,transparent)',
+          background: `radial-gradient(transparent, transparent, ${
+            props.outerGlowColor || '#fff'
+          }, transparent, transparent)`,
           filter: 'blur(32px)',
           transform: 'translateZ(0)', // removes ugly border
           backgroundSize: '300% 300%',
 
           animation: `${translateGlow} 20s linear infinite`,
+          animationPlayState:
+            props.animateOuterGlow === undefined ||
+            props.animateOuterGlow === true
+              ? 'running'
+              : 'paused',
         })}
       />
+    )
+  }
 
-      {/* link */}
-      <a
-        href="https://www.google.com"
-        target={'_blank'}
+  const hoverBorderDisplay = () => {
+    return (
+      <span
+        css={css({
+          // only exists when hovered (handled in 'container')
+
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+
+          opacity: hovering ? 0.6 : 0,
+          backgroundColor: `${props.borderHoverColor || '#fff'}`,
+
+          transition: 'opacity 0.9s ease',
+        })}
+      />
+    )
+  }
+
+  const borderAnimationDisplay = () => {
+    return (
+      <span
+        css={css({
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+
+          color: '#fff',
+          background: `conic-gradient(transparent 135deg, ${
+            props.borderColor || '#fff'
+          } 180deg, transparent 255deg), conic-gradient(transparent -45deg, ${
+            props.borderColor || '#fff'
+          } 0deg, transparent 75deg)`,
+          filter: 'blur(6px)',
+
+          animation: `${spinGradient} 5s linear infinite`,
+          animationPlayState: hovering ? 'paused' : 'running',
+        })}
+      />
+    )
+  }
+
+  /* ---------------------------------- main ---------------------------------- */
+  return (
+    <div
+      css={css({
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '9999px',
+      })}
+      onMouseEnter={() => {
+        setHovering(true)
+      }}
+      onMouseLeave={() => {
+        setHovering(false)
+      }}
+    >
+      {/* outer glow animation */}
+      {outerGlowDisplay()}
+
+      {/* content */}
+      <div
         css={css({
           position: 'relative',
-          padding: `${props.borderThickness}`,
-
-          display: 'block',
-
+          padding: `${props.borderThickness || '1px'}`,
           borderRadius: '9999px',
           overflow: 'hidden',
           isolation: 'isolate', ////https:// bugs.webkit.org/show_bug.cgi?id=67950
-
-          cursor: 'pointer',
         })}
       >
-        {/* only exists as borders, get hover event from div container */}
-        {/* hover shows border */}
-        <span
-          css={css({
-            // only exists when hovered (handled in 'container')
+        {/* hover border */}
+        {hoverBorderDisplay()}
 
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
-
-            opacity: 0,
-            backgroundColor: `${props.borderHoverColor}`,
-
-            transition: 'opacity 0.9s ease',
-          })}
-          className="borderHover"
-        />
         {/* border animation */}
-        <span
-          css={css({
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
-
-            color: '#fff',
-            background: `conic-gradient(transparent 135deg, ${props.borderColor} 180deg, transparent 255deg), conic-gradient(transparent -45deg, ${props.borderColor} 0deg, transparent 75deg)`,
-            filter: 'blur(6px)',
-
-            animation: `${spinGradient} 5s linear infinite`,
-          })}
-          className="border"
-        />
+        {borderAnimationDisplay()}
 
         {/* text + icon */}
-        <span
+        <div
           css={css({
             position: 'relative',
-            minWidth: '188px',
-            height: '48px',
-            padding: '0 20px',
-
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-
-            color: `${props.textColor}`,
-            backgroundColor: `${props.backgroundColor}`,
-            borderRadius: '24px',
+            backgroundColor: `${props.backgroundColor || '#000'}`,
+            borderRadius: '9999999px',
           })}
         >
-          <p
-            css={css({
-              paddingBottom: '2px',
-
-              fontFamily: `${props.fontFamily}`,
-              fontWeight: `${props.fontWeight}`,
-              fontStyle: `${props.fontStyle}`,
-            })}
-          >
-            Register now
-          </p>
-          <svg
-            fill="none"
-            height="16"
-            viewBox="0 0 16 16"
-            width="16"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3.33337 8H12.6667"
-              stroke={`${props.iconColor}`}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M8 3.33333L12.6667 8L8 12.6667"
-              stroke={`${props.iconColor}`}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
-          </svg>
-        </span>
-      </a>
+          {props.children}
+        </div>
+      </div>
     </div>
   )
-}
-
-export default AnimatedGradientButton
-
-AnimatedGradientButton.defaultProps = {
-  textColor: '#fff',
-  iconColor: '#fff',
-  backgroundColor: '#000',
-
-  borderColor: '#fff',
-  borderHoverColor: '#fff',
-  borderThickness: '1px',
-
-  fontFamily: 'inherit',
-  fontWeight: 'normal',
-  fontStyle: 'normal',
 }
