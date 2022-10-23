@@ -22,11 +22,9 @@ const AnimatedGradientButton = (props: Props) => {
   const spinGradient = keyframes`
     0% {
       transform: scaleX(8) scaleY(1.5) rotate(0deg);
-      opacity: 1;
     }
     to {
       transform: scaleX(8) scaleY(1.5) rotate(1turn);
-      opacity: 1;
     }
   }
   `
@@ -99,10 +97,10 @@ const AnimatedGradientButton = (props: Props) => {
           padding: `${props.borderThickness}`,
 
           display: 'block',
-          transform: 'translateZ(10px)',
 
           borderRadius: '9999px',
           overflow: 'hidden',
+          isolation: 'isolate', ////https:// bugs.webkit.org/show_bug.cgi?id=67950
 
           cursor: 'pointer',
         })}
