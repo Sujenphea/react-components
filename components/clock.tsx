@@ -2,13 +2,29 @@ import { css } from '@emotion/react'
 import { motion, useAnimationControls } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+/* -------------------------------------------------------------------------- */
+/*                                  constants                                 */
+/* -------------------------------------------------------------------------- */
 let timingFunction = { ease: [0.66, 0.15, 0.1, 0.95], duration: 0.3 }
 
+/* -------------------------------------------------------------------------- */
+/*                                    clock                                   */
+/* -------------------------------------------------------------------------- */
 export default function Clock(props: { time: string }) {
   /* -------------------------------- variables ------------------------------- */
   const [countdown, setCountdown] = useState(0)
 
   /* ---------------------------------- hooks --------------------------------- */
+  const countdownObject = useMemo(() => {
+    return {
+      days: Math.floor(countdown / 864e5),
+      hours: Math.floor((countdown / 36e5) % 24),
+      minutes: Math.floor((countdown / 1e3 / 60) % 60),
+      seconds: Math.floor((countdown / 1e3) % 60),
+    }
+  }, [countdown])
+
+  /* --------------------------------- effect --------------------------------- */
   useEffect(() => {
     let getTime = () => {
       let currentTime = new Date()
@@ -26,16 +42,21 @@ export default function Clock(props: { time: string }) {
     return () => clearInterval(timer)
   }, [])
 
-  const countdownObject = useMemo(() => {
-    return {
-      days: Math.floor(countdown / 864e5),
-      hours: Math.floor((countdown / 36e5) % 24),
-      minutes: Math.floor((countdown / 1e3 / 60) % 60),
-      seconds: Math.floor((countdown / 1e3) % 60),
-    }
-  }, [countdown])
-
   /* --------------------------------- display -------------------------------- */
+  const colonDisplay = () => {
+    return (
+      <div
+        css={css({
+          fontSize: '40px',
+          paddingBottom: '24px',
+          color: '#888',
+        })}
+      >
+        :
+      </div>
+    )
+  }
+
   const digitDisplay = (props: { digit: string }) => {
     const storedValue = useRef(0)
     const controls = useAnimationControls()
@@ -152,18 +173,13 @@ export default function Clock(props: { time: string }) {
         gap: '8px',
       })}
     >
-      <div
-        css={css({
-          fontSize: '40px',
-          paddingBottom: '24px',
-          color: '#888',
-        })}
-      >
-        :
-      </div>
-
+      {unitTimeDisplay({ time: countdownObject.days, unit: 'days' })}
+      {colonDisplay()}
+      {unitTimeDisplay({ time: countdownObject.hours, unit: 'hours' })}
+      {colonDisplay()}
+      {unitTimeDisplay({ time: countdownObject.minutes, unit: 'minutes' })}
+      {colonDisplay()}
       {unitTimeDisplay({ time: countdownObject.seconds, unit: 'seconds' })}
-      {/* {digitDisplay({ value: 2 })} */}
     </div>
   )
 }
