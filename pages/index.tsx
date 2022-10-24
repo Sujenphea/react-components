@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import FlipClock from '../components/clock'
+import FlipClock from '../components/flipClock'
 
 const AnimatedGradientButton = dynamic(
   () => import('../components/animatedGradientButton'),
@@ -17,6 +17,13 @@ export default function Home() {
   // components
   const [animatedGradientButtonOpen, setAnimatedGradientButtonOpen] =
     useState(false)
+  const [flipClockOpen, setflipClockOpen] = useState(false)
+
+  /* -------------------------------- handlers -------------------------------- */
+  const resetDisplays = () => {
+    setAnimatedGradientButtonOpen(false)
+    setflipClockOpen(false)
+  }
 
   /* --------------------------------- display -------------------------------- */
   // navigation bar
@@ -42,10 +49,20 @@ export default function Home() {
       >
         <button
           onClick={() => {
+            resetDisplays()
             setAnimatedGradientButtonOpen(true)
           }}
         >
           animated gradient button
+        </button>
+
+        <button
+          onClick={() => {
+            resetDisplays()
+            setflipClockOpen(true)
+          }}
+        >
+          flip clock
         </button>
       </div>
     )
@@ -76,12 +93,13 @@ export default function Home() {
           </AnimatedGradientButton>
         )}
 
-        <FlipClock
-          isCountdown
-          showLabels
-          time={'2022-10-25T10:30:00+00:00'}
-          labelColor="white"
-        />
+        {flipClockOpen && (
+          <FlipClock
+            isCountdown
+            showLabels
+            time={'2022-10-25T10:30:00+00:00'}
+          />
+        )}
       </div>
     )
   }
