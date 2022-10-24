@@ -1,15 +1,21 @@
 import { css } from '@emotion/react'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import FlipClock from '../components/flipClock'
 
-const AnimatedGradientButton = dynamic(
-  () => import('../components/animatedGradientButton'),
+const FlipClock = dynamic(() => import('../components/flipClock'), {
+  ssr: true,
+})
+
+const AnimatedGlowButton = dynamic(
+  () => import('../components/animatedGlowButton'),
   {
     ssr: true,
   }
 )
 
+/* -------------------------------------------------------------------------- */
+/*                                    home                                    */
+/* -------------------------------------------------------------------------- */
 export default function Home() {
   /* --------------------------------- states --------------------------------- */
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -86,18 +92,18 @@ export default function Home() {
         })}
       >
         {animatedGradientButtonOpen && (
-          <AnimatedGradientButton>
+          <AnimatedGlowButton>
             <div css={css({ padding: '8px 24px' })}>
               <div>hiasfasdfaasdfkljh kajshdf lkahsdflkj asdf jklahs sd</div>
             </div>
-          </AnimatedGradientButton>
+          </AnimatedGlowButton>
         )}
 
         {flipClockOpen && (
           <FlipClock
             isCountdown
             showLabels
-            time={'2022-10-25T10:30:00+00:00'}
+            time={'2023-01-01T10:30:00+00:00'}
           />
         )}
       </div>
