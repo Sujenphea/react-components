@@ -2,12 +2,19 @@ import { css } from '@emotion/react'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 
+const AnimatedGlowButton = dynamic(
+  () => import('../components/animatedGlowButton'),
+  {
+    ssr: true,
+  }
+)
+
 const FlipClock = dynamic(() => import('../components/flipClock'), {
   ssr: true,
 })
 
-const AnimatedGlowButton = dynamic(
-  () => import('../components/animatedGlowButton'),
+const AnimatedGradientGlowButton = dynamic(
+  () => import('../components/animatedGradientGlowButton'),
   {
     ssr: true,
   }
@@ -21,14 +28,16 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // components
-  const [animatedGradientButtonOpen, setAnimatedGradientButtonOpen] =
+  const [animatedGlowButtonOpen, setAnimatedGlowButtonOpen] = useState(false)
+  const [flipClockOpen, setFlipClockOpen] = useState(false)
+  const [animatedGradientGlowButtonOpen, setAnimatedGradientGlowButtonOpen] =
     useState(false)
-  const [flipClockOpen, setflipClockOpen] = useState(false)
 
   /* -------------------------------- handlers -------------------------------- */
   const resetDisplays = () => {
-    setAnimatedGradientButtonOpen(false)
-    setflipClockOpen(false)
+    setAnimatedGlowButtonOpen(false)
+    setFlipClockOpen(false)
+    setAnimatedGradientGlowButtonOpen(false)
   }
 
   /* --------------------------------- display -------------------------------- */
@@ -56,7 +65,7 @@ export default function Home() {
         <button
           onClick={() => {
             resetDisplays()
-            setAnimatedGradientButtonOpen(true)
+            setAnimatedGlowButtonOpen(true)
           }}
         >
           animated gradient button
@@ -65,10 +74,19 @@ export default function Home() {
         <button
           onClick={() => {
             resetDisplays()
-            setflipClockOpen(true)
+            setFlipClockOpen(true)
           }}
         >
           flip clock
+        </button>
+
+        <button
+          onClick={() => {
+            resetDisplays()
+            setAnimatedGradientGlowButtonOpen(true)
+          }}
+        >
+          animated gradient glow button
         </button>
       </div>
     )
@@ -91,7 +109,7 @@ export default function Home() {
           color: 'white',
         })}
       >
-        {animatedGradientButtonOpen && (
+        {animatedGlowButtonOpen && (
           <AnimatedGlowButton>
             <div css={css({ padding: '8px 24px' })}>
               <div>hiasfasdfaasdfkljh kajshdf lkahsdflkj asdf jklahs sd</div>
@@ -105,6 +123,18 @@ export default function Home() {
             showLabels
             time={'2023-01-01T10:30:00+00:00'}
           />
+        )}
+
+        {animatedGradientGlowButtonOpen && (
+          <AnimatedGradientGlowButton>
+            <div
+              css={css({
+                padding: '2px 12px',
+              })}
+            >
+              hello jsdfiojsiofjas
+            </div>
+          </AnimatedGradientGlowButton>
         )}
       </div>
     )
