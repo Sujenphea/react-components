@@ -1,4 +1,76 @@
 import { css, keyframes } from '@emotion/react'
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from 'framer-motion'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
+import { ReactNode, useEffect, useRef, useState } from 'react'
+
+gsap.registerPlugin(ScrollTrigger)
+
+/* -------------------------------------------------------------------------- */
+/*                                  displays                                  */
+/* -------------------------------------------------------------------------- */
+// ref: https://samuelkraft.com/blog/spring-parallax-framer-motion-guide
+const ParallaxDisplay = (props: {
+  children: ReactNode
+  offset?: number
+  clampInitial?: boolean
+  clampFinal?: boolean
+}) => {
+  /* --------------------------------- states --------------------------------- */
+  const [elementTop, setElementTop] = useState(0)
+  const [clientHeight, setClientHeight] = useState(0)
+  const [clientWidth, setClientWidth] = useState(0)
+  const divRef = useRef<HTMLDivElement>(null!)
+
+  // framer motion properties
+  const offset = props.offset === undefined ? 50 : props.offset
+  const prefersReducedMotion = useReducedMotion()
+  const { scrollY } = useScroll() // scroll value
+  const yValue = useTransform(
+    scrollY,
+    [elementTop, elementTop + offset + clientHeight * 0.5],
+    [props.clampInitial ? 0 : offset, props.clampFinal ? 0 : -offset]
+  ) // transform
+  const animatedYValue = useSpring(yValue, { stiffness: 400, damping: 90 })
+
+  /* --------------------------------- effects -------------------------------- */
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 500) {
+        setElementTop(
+          divRef.current.getBoundingClientRect().top + window.scrollY ||
+            window.pageYOffset
+        )
+
+        setClientHeight(window.innerHeight)
+        setClientWidth(window.innerWidth)
+      }
+    }
+    onResize()
+
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  /* ---------------------------------- main ---------------------------------- */
+  return (
+    <>
+      {prefersReducedMotion ? (
+        <motion.div ref={divRef}>{props.children}</motion.div>
+      ) : (
+        <motion.div ref={divRef} style={{ y: animatedYValue }}>
+          {props.children}
+        </motion.div>
+      )}
+    </>
+  )
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                  constants                                 */
@@ -48,11 +120,7 @@ export default function LotusHomePage() {
           })}
         >
           {/* title */}
-          <div
-            css={css({
-              transform: 'none',
-            })}
-          >
+          <ParallaxDisplay offset={50} clampInitial>
             <h1
               css={css({
                 marginLeft: 0,
@@ -102,7 +170,7 @@ export default function LotusHomePage() {
                 ></path>
               </svg>
             </h1>
-          </div>
+          </ParallaxDisplay>
 
           {/* Headline */}
           <div
@@ -118,384 +186,567 @@ export default function LotusHomePage() {
               position: 'relative',
             })}
           >
-            <h2
-              css={css({
-                fontSize: '65px',
-                lineHeight: 1,
-                margin: 0,
-                fontWeight: 500,
-                fontStyle: 'normal',
-              })}
-            >
-              A community of optimalists.
-            </h2>
-
-            <div
-              css={css({
-                display: 'flex',
-                alignItems: 'flex-start',
-                flexDirection: 'column',
-                width: '300px',
-                marginTop: '3rem',
-              })}
-            >
-              {/* our vision */}
-              <a
+            <ParallaxDisplay offset={80} clampInitial>
+              <h2
                 css={css({
-                  paddingTop: '0.75rem',
-                  paddingBottom: '0.75rem',
-                  transitionDuration: '0.3s',
-                  transitionProperty:
-                    'color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-text-decoration-color,-webkit-backdrop-filter',
-                  transitionTimingFunction: 'cubic-bezier(.4,0,.2,1)',
-
-                  textTransform: 'uppercase',
-                  fontSize: '1rem',
-                  lineHeight: '1.5rem',
-                  gap: '0.25rem',
-
-                  display: 'inline-flex',
-                  alignItems: 'flex-start',
-                  flexDirection: 'column',
+                  fontSize: '65px',
+                  lineHeight: 1,
+                  margin: 0,
+                  fontWeight: 500,
+                  fontStyle: 'normal',
                 })}
               >
-                <div
-                  css={css({
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  })}
-                >
-                  Our Vision
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M6.56033 6.5L17.167 17.1067"
-                      stroke="currentColor"
-                      stroke-width="1.2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                    <path
-                      d="M17.167 7.10742L17.167 17.1074H7.16699"
-                      stroke="currentColor"
-                      stroke-width="1.2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                  </svg>
-                </div>
-                {/* traffic light */}
-                <div
-                  css={css({
-                    width: '120px',
-                    transition: 'all 0.3s ease 0s',
-                    opacity: 1,
+                A community of optimalists.
+              </h2>
+            </ParallaxDisplay>
 
-                    overflowX: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    position: 'relative',
+            <ParallaxDisplay offset={100} clampInitial>
+              <div
+                css={css({
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  flexDirection: 'column',
+                  width: '300px',
+                  marginTop: '3rem',
+                })}
+              >
+                {/* our vision */}
+                <a
+                  css={css({
+                    paddingTop: '0.75rem',
+                    paddingBottom: '0.75rem',
+                    transitionDuration: '0.3s',
+                    transitionProperty:
+                      'color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-text-decoration-color,-webkit-backdrop-filter',
+                    transitionTimingFunction: 'cubic-bezier(.4,0,.2,1)',
+
+                    textTransform: 'uppercase',
+                    fontSize: '1rem',
+                    lineHeight: '1.5rem',
+                    gap: '0.25rem',
+
+                    display: 'inline-flex',
+                    alignItems: 'flex-start',
+                    flexDirection: 'column',
                   })}
                 >
                   <div
                     css={css({
-                      flex: '0 0 auto',
-                      minWidth: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    })}
+                  >
+                    Our Vision
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.56033 6.5L17.167 17.1067"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                      <path
+                        d="M17.167 7.10742L17.167 17.1074H7.16699"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                    </svg>
+                  </div>
+                  {/* traffic light */}
+                  <div
+                    css={css({
+                      width: '120px',
+                      transition: 'all 0.3s ease 0s',
+                      opacity: 1,
+
+                      overflowX: 'hidden',
                       display: 'flex',
                       flexDirection: 'row',
-                      alignItems: 'center',
-
-                      animation: `${slide} 1s linear infinite`,
+                      position: 'relative',
                     })}
                   >
                     <div
                       css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                        flex: '0 0 auto',
+                        minWidth: '100%',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
 
-                        backgroundColor: '#7FFFB9',
+                        animation: `${slide} 1s linear infinite`,
                       })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                    >
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FFD462',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#7FFFB9',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FF9596',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FFD462',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#91B9FF',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FF9596',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#61FEFF',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#91B9FF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#7FFFB9',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#61FEFF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FFD462',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#7FFFB9',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FF9596',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FFD462',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#91B9FF',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FF9596',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#61FEFF',
-                      })}
-                    />
+                          backgroundColor: '#91B9FF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#61FEFF',
+                        })}
+                      />
+                    </div>
                   </div>
-                </div>
-              </a>
+                </a>
 
-              {/* How can i mint lily */}
-              <a
-                css={css({
-                  paddingTop: '0.75rem',
-                  paddingBottom: '0.75rem',
-
-                  transitionDuration: '0.3s',
-                  transitionProperty:
-                    'color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-text-decoration-color,-webkit-backdrop-filter',
-                  transitionTimingFunction: 'cubic-bezier(.4,0,.2,1)',
-
-                  textTransform: 'uppercase',
-                  fontSize: '1rem',
-                  lineHeight: '1.5rem',
-                  gap: '0.25rem',
-
-                  display: 'inline-flex',
-                  alignItems: 'flex-start',
-                  flexDirection: 'column',
-                })}
-              >
-                <div
+                {/* How can i mint lily */}
+                <a
                   css={css({
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  })}
-                >
-                  How can i mint lily
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M6.56033 6.5L17.167 17.1067"
-                      stroke="currentColor"
-                      stroke-width="1.2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                    <path
-                      d="M17.167 7.10742L17.167 17.1074H7.16699"
-                      stroke="currentColor"
-                      stroke-width="1.2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                  </svg>
-                </div>
-                {/* traffic light */}
-                <div
-                  css={css({
-                    width: '120px',
-                    transition: 'all 0.3s ease 0s',
-                    opacity: 0,
+                    paddingTop: '0.75rem',
+                    paddingBottom: '0.75rem',
 
-                    overflowX: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    position: 'relative',
+                    transitionDuration: '0.3s',
+                    transitionProperty:
+                      'color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-text-decoration-color,-webkit-backdrop-filter',
+                    transitionTimingFunction: 'cubic-bezier(.4,0,.2,1)',
+
+                    textTransform: 'uppercase',
+                    fontSize: '1rem',
+                    lineHeight: '1.5rem',
+                    gap: '0.25rem',
+
+                    display: 'inline-flex',
+                    alignItems: 'flex-start',
+                    flexDirection: 'column',
                   })}
                 >
                   <div
                     css={css({
-                      flex: '0 0 auto',
-                      minWidth: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    })}
+                  >
+                    How can i mint lily
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.56033 6.5L17.167 17.1067"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                      <path
+                        d="M17.167 7.10742L17.167 17.1074H7.16699"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                    </svg>
+                  </div>
+                  {/* traffic light */}
+                  <div
+                    css={css({
+                      width: '120px',
+                      transition: 'all 0.3s ease 0s',
+                      opacity: 0,
+
+                      overflowX: 'hidden',
                       display: 'flex',
                       flexDirection: 'row',
-                      alignItems: 'center',
-
-                      animation: `${slide} 1s linear infinite`,
+                      position: 'relative',
                     })}
                   >
                     <div
                       css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                        flex: '0 0 auto',
+                        minWidth: '100%',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
 
-                        backgroundColor: '#7FFFB9',
+                        animation: `${slide} 1s linear infinite`,
                       })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                    >
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FFD462',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#7FFFB9',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FF9596',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FFD462',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#91B9FF',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FF9596',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#61FEFF',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#91B9FF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#7FFFB9',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#61FEFF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FFD462',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#7FFFB9',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#FF9596',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FFD462',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#91B9FF',
-                      })}
-                    />
-                    <div
-                      css={css({
-                        paddingTop: '2px',
-                        paddingBottom: '2px',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
+                          backgroundColor: '#FF9596',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
 
-                        backgroundColor: '#61FEFF',
-                      })}
-                    />
+                          backgroundColor: '#91B9FF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#61FEFF',
+                        })}
+                      />
+                    </div>
                   </div>
-                </div>
-              </a>
-            </div>
+                </a>
+
+                {/* How can i mint lily */}
+                <a
+                  css={css({
+                    paddingTop: '0.75rem',
+                    paddingBottom: '0.75rem',
+
+                    transitionDuration: '0.3s',
+                    transitionProperty:
+                      'color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-text-decoration-color,-webkit-backdrop-filter',
+                    transitionTimingFunction: 'cubic-bezier(.4,0,.2,1)',
+
+                    textTransform: 'uppercase',
+                    fontSize: '1rem',
+                    lineHeight: '1.5rem',
+                    gap: '0.25rem',
+
+                    display: 'inline-flex',
+                    alignItems: 'flex-start',
+                    flexDirection: 'column',
+                  })}
+                >
+                  <div
+                    css={css({
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    })}
+                  >
+                    How can i mint lily
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6.56033 6.5L17.167 17.1067"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                      <path
+                        d="M17.167 7.10742L17.167 17.1074H7.16699"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                    </svg>
+                  </div>
+                  {/* traffic light */}
+                  <div
+                    css={css({
+                      width: '120px',
+                      transition: 'all 0.3s ease 0s',
+                      opacity: 0,
+
+                      overflowX: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      position: 'relative',
+                    })}
+                  >
+                    <div
+                      css={css({
+                        flex: '0 0 auto',
+                        minWidth: '100%',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+
+                        animation: `${slide} 1s linear infinite`,
+                      })}
+                    >
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#7FFFB9',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#FFD462',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#FF9596',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#91B9FF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#61FEFF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#7FFFB9',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#FFD462',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#FF9596',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#91B9FF',
+                        })}
+                      />
+                      <div
+                        css={css({
+                          paddingTop: '2px',
+                          paddingBottom: '2px',
+                          paddingLeft: '1rem',
+                          paddingRight: '1rem',
+
+                          backgroundColor: '#61FEFF',
+                        })}
+                      />
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </ParallaxDisplay>
           </div>
         </div>
       </div>
@@ -577,23 +828,6 @@ export default function LotusHomePage() {
 
   return (
     <div>
-      {/* <div
-        css={css({
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100px',
-
-          backgroundColor: 'rgba(10, 10, 10, 0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        })}
-      >
-        test header
-      </div> */}
-
       <div
         css={css({
           position: 'relative',
@@ -611,6 +845,9 @@ export default function LotusHomePage() {
         {mainDisplay()}
 
         {/* filler */}
+        {fillerContentDisplay()}
+        {fillerContentDisplay()}
+        {fillerContentDisplay()}
         {fillerContentDisplay()}
         {fillerContentDisplay()}
       </div>
