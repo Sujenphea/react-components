@@ -4,9 +4,14 @@ import '../styles/sanitize.css'
 import '../styles/globals.css'
 // import '../styles/demo.css'
 import { AppProps } from 'next/app'
+import { ChakraProvider } from '@chakra-ui/react'
 
 function MyApp(props: AppProps) {
-  return <props.Component {...props.pageProps} />
+  return (
+    <ChakraProvider>
+      <props.Component {...props.pageProps} />
+    </ChakraProvider>
+  )
 }
 
 export default MyApp
