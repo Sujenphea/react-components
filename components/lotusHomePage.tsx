@@ -10,6 +10,7 @@ import {
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
 import { ReactNode, useEffect, useRef, useState } from 'react'
+// disable scroll: https://github.com/willmcpo/body-scroll-lock
 
 /* -------------------------------------------------------------------------- */
 /*                                  constants                                 */
@@ -291,6 +292,7 @@ const FooterDisplay = () => {
       zIndex={9999}
       position="relative"
       backgroundColor="rgb(97, 254, 255)"
+      color="black"
     >
       {/* list */}
       <chakra.div
@@ -393,14 +395,18 @@ export default function LotusHomePage() {
   const loadingDivRef = useRef<HTMLDivElement>(null!)
 
   /* --------------------------------- effects -------------------------------- */
+
   useEffect(() => {
     setClientHeight(window.innerHeight)
     setClientWidth(window.innerWidth)
+    document.body.style.overflow = 'hidden' // locks scroll
 
     // initial animation
     setTimeout(() => {
       requestAnimationFrame(() => {
+        document.body.style.overflow = 'unset'
         loadingDivRef.current.style.zIndex = 'inherit'
+
         const x = gsap.timeline({ repeat: 0 })
         x.to('#main', {
           y: 0,
@@ -1047,63 +1053,66 @@ export default function LotusHomePage() {
   const lotusGangMerchDisplay = () => {
     return (
       <chakra.div
-        maxWidth="80rem"
         paddingX={{ base: '1rem', lg: '4rem' }}
         paddingY="4rem"
-        marginX="auto"
-        display="flex"
-        flexDirection={{ base: 'column', lg: 'row' }}
-        alignItems="center"
         backgroundColor="white"
-        textAlign={{ base: 'center', lg: 'left' }}
       >
-        {/* left */}
-        <chakra.div>
-          {/* title */}
-          <chakra.h2
-            fontSize={{ base: '3rem', lg: '3.75rem' }}
-            fontWeight={700}
-          >
-            Lotus Gang Merch
-          </chakra.h2>
+        <chakra.div
+          marginX="auto"
+          display="flex"
+          flexDirection={{ base: 'column', lg: 'row' }}
+          alignItems="center"
+          textAlign={{ base: 'center', lg: 'left' }}
+          maxWidth="80rem"
+        >
+          {/* left */}
+          <chakra.div>
+            {/* title */}
+            <chakra.h2
+              fontSize={{ base: '3rem', lg: '3.75rem' }}
+              fontWeight={700}
+            >
+              Lotus Gang Merch
+            </chakra.h2>
 
-          {/* content */}
-          <chakra.p
-            marginX={{ base: 'auto', lg: 0 }}
-            marginY="1.5rem"
-            width={{ lg: '75%' }}
-            fontSize={{ lg: '1.125rem' }}
-            lineHeight={{ lg: '1.75rem' }}
-          >
-            <chakra.span fontStyle="italic">Sources</chakra.span> say this is
-            the best merch in Web3. Each purchase comes with a bag of goodies.
-          </chakra.p>
+            {/* content */}
+            <chakra.p
+              marginX={{ base: 'auto', lg: 0 }}
+              marginY="1.5rem"
+              width={{ lg: '75%' }}
+              fontSize={{ lg: '1.125rem' }}
+              lineHeight={{ lg: '1.75rem' }}
+            >
+              <chakra.span fontStyle="italic">Sources</chakra.span> say this is
+              the best merch in Web3. Each purchase comes with a bag of goodies.
+            </chakra.p>
 
-          <chakra.button
-            display="inline-flex"
-            alignItems="center"
-            gap="0.25rem"
-            borderRadius="9999px"
-            textColor="rgb(23, 23, 23)"
-            fontSize="1.25rem"
-            lineHeight="1.75rem"
-            paddingY="0.75rem"
-            paddingX="1.75rem"
-            cursor="help"
-            backgroundColor="transparent"
-            border="1px solid rgb(48, 48, 48)"
-          >
-            Coming soon...
-          </chakra.button>
+            <chakra.button
+              display="inline-flex"
+              alignItems="center"
+              gap="0.25rem"
+              borderRadius="9999px"
+              textColor="rgb(23, 23, 23)"
+              fontSize="1.25rem"
+              lineHeight="1.75rem"
+              paddingY="0.75rem"
+              paddingX="1.75rem"
+              cursor="help"
+              backgroundColor="transparent"
+              border="1px solid rgb(48, 48, 48)"
+            >
+              Coming soon...
+            </chakra.button>
+          </chakra.div>
+
+          {/* right */}
+          <chakra.img
+            marginTop={{ base: '4rem', lg: '0' }}
+            src="./lotus-gang-hoody.webp"
+            maxWidth="100%"
+            verticalAlign="middle"
+          ></chakra.img>
         </chakra.div>
-
-        {/* right */}
-        <chakra.img
-          marginTop={{ base: '4rem', lg: '0' }}
-          src="./lotus-gang-hoody.webp"
-          maxWidth="100%"
-          verticalAlign="middle"
-        ></chakra.img>
       </chakra.div>
     )
   }

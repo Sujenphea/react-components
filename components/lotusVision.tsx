@@ -28,17 +28,17 @@ const MotionBox = chakra(motion.div, {
     isValidMotionProp(prop) || shouldForwardProp(prop),
 })
 
-const NumberDisplay = (props: { children: ReactNode }) => {
+const PageOneNumberDisplay = (props: { children: ReactNode }) => {
   return (
-    <Box width="100%" height="100vh" position="relative">
+    <chakra.div width="100%" height="100vh" position="relative">
       {props.children}
-    </Box>
+    </chakra.div>
   )
 }
 
-const TextDisplay = (props: { children: ReactNode }) => {
+const PageTwoTextDisplay = (props: { children: ReactNode }) => {
   return (
-    <Box
+    <chakra.div
       display="flex"
       alignItems="center"
       width="100%"
@@ -46,8 +46,7 @@ const TextDisplay = (props: { children: ReactNode }) => {
       mx="auto"
       maxW="80rem"
     >
-      <Text
-        as="h1"
+      <chakra.h1
         px="1rem"
         mb="2rem"
         fontSize="3rem"
@@ -55,29 +54,29 @@ const TextDisplay = (props: { children: ReactNode }) => {
         lineHeight="1.25"
       >
         {props.children}
-      </Text>
-    </Box>
+      </chakra.h1>
+    </chakra.div>
   )
 }
 
+/**
+ *
+ * @param props
+ * @returns rotate: page two, no rotate: page three
+ */
 const CardDisplay = (props: {
   scrollY: MotionValue<number>
-  transformValue: number[]
-  translateValue: number[]
-  rotateValue: number[]
-  children: ReactNode
+  transformValue?: number[]
+  translateValue?: number[]
+  rotateValue?: number[]
+  children?: ReactNode
+  styles?: SerializedStyles
 }) => {
   // cards
   const transformedTranslateYCard = useTransform(
     props.scrollY,
-    props.transformValue,
-    props.translateValue
-  )
-
-  const transformedRotateYCard = useTransform(
-    props.scrollY,
-    props.transformValue,
-    props.rotateValue
+    props.transformValue || [],
+    props.translateValue || []
   )
 
   const translateCard = useSpring(transformedTranslateYCard, {
@@ -86,64 +85,60 @@ const CardDisplay = (props: {
     restSpeed: 0.5,
   })
 
-  const rotateCard = useSpring(transformedRotateYCard, {
-    stiffness: 600,
-    damping: 120,
-    restSpeed: 0.5,
-  })
+  const toRotate = props.rotateValue !== undefined
+  let rotateCard: MotionValue<number> = null!
+  if (toRotate) {
+    const transformedRotateYCard = useTransform(
+      props.scrollY,
+      props.rotateValue === undefined ? [] : props.transformValue || [],
+      props.rotateValue || []
+    )
+
+    rotateCard = useSpring(transformedRotateYCard, {
+      stiffness: 600,
+      damping: 120,
+      restSpeed: 0.5,
+    })
+  }
 
   return (
     <MotionBox
       position="absolute"
-      top={{ base: '6vh', lg: '50%' }}
-      right={{ base: '1rem', xl: 0 }}
-      transform="rotate(-40deg) translateY(-100vh)"
-      style={{ y: translateCard, rotate: rotateCard }}
+      top={toRotate ? { base: '30%', lg: '50%' } : '50%'}
+      right={toRotate ? { base: '1rem', xl: 0 } : 'inherit'}
+      transform={toRotate ? 'rotate(-40deg) translateY(-100vh)' : ''}
+      css={props.styles}
+      style={{ y: translateCard, rotate: toRotate ? rotateCard : '0' }}
     >
       {props.children}
     </MotionBox>
   )
 }
 
-const PageThreeCardDisplay = (props: {
-  scrollY: MotionValue<number>
-  transformValue: number[]
-  translateValue: number[]
-  children: ReactNode
-  styles?: SerializedStyles
+const RoundedButtonDisplay = (props: {
+  backgroundColor?: string
+  color?: string
+  borderColor?: string
+  children?: ReactNode
 }) => {
-  // cards
-  const transformedTranslateYCard = useTransform(
-    props.scrollY,
-    props.transformValue,
-    props.translateValue
-  )
-
-  const translateCard = useSpring(transformedTranslateYCard, {
-    stiffness: 600,
-    damping: 120,
-    restSpeed: 0.5,
-  })
-
   return (
-    <motion.div
-      css={[
-        css({
-          position: 'absolute',
-          top: '50%',
-        }),
-        props.styles,
-      ]}
-      style={{ y: translateCard }}
+    <Button
+      backgroundColor={props.backgroundColor ?? 'white'}
+      color={props.color ?? 'rgb(38, 38, 38)'}
+      display="inline-flex"
+      alignItems="center"
+      gap="0.25rem"
+      borderRadius="9999px"
+      lineHeight="1.75rem"
+      fontSize="1.25rem"
+      paddingX="2rem"
+      paddingY="1.75rem"
+      borderWidth="1px"
+      borderStyle="solid"
+      borderColor={props.borderColor ?? 'transparent'}
     >
-      {/* <MotionBox
-      position="absolute"
-      top="50%"
-      style={{ y: translateCard, ...props.css }}
-    > */}
       {props.children}
-      {/* </MotionBox> */}
-    </motion.div>
+    </Button>
   )
 }
 
@@ -155,8 +150,9 @@ export default function LotusVision() {
   const [clientWidth, setClientWidth] = useState(0)
 
   // refs
-  const secondPageRef = useRef<HTMLDivElement>(null!)
-  const secondPageButtonsRef = useRef<HTMLDivElement>(null!)
+  const pageTwoRef = useRef<HTMLDivElement>(null!)
+  const pageThreeRef = useRef<HTMLDivElement>(null!)
+  const pageTwoButtonRef = useRef<HTMLDivElement>(null!)
   const timerRef = useRef<NodeJS.Timeout>(null!)
 
   /* ------------------------------ motion framer ----------------------------- */
@@ -167,6 +163,14 @@ export default function LotusVision() {
     [0, 3 * clientHeight],
     [0, -3 * clientHeight]
   )
+
+  // progress bar
+  const progressBarX = useTransform(scrollY, [0, 18 * clientHeight], [0, 1])
+  const scaleXProgressBar = useSpring(progressBarX, {
+    stiffness: 400,
+    damping: 90,
+    restSpeed: 0.5,
+  })
 
   // page one
   const translateYNumbers = useSpring(newY, {
@@ -198,23 +202,27 @@ export default function LotusVision() {
     scrollY.onChange((scroll) => {
       // page one
       if (scroll < 3 * window.innerHeight) {
-        secondPageRef.current.style.opacity = '0'
-        secondPageButtonsRef.current.style.opacity = '0'
+        pageTwoRef.current.style.opacity = '0'
+        pageTwoButtonRef.current.style.opacity = '0'
 
         clearTimeout(timerRef.current)
       }
       // page one
-      else if (scroll >= 3 * window.innerHeight) {
-        console.log('dbg - change')
-        secondPageRef.current.style.opacity = '1'
+      else if (
+        scroll >= 3 * window.innerHeight &&
+        scroll < 9 * window.innerHeight
+      ) {
+        pageTwoRef.current.style.opacity = '1'
 
         timerRef.current = setTimeout(() => {
-          secondPageButtonsRef.current.style.opacity = '1'
+          pageTwoButtonRef.current.style.opacity = '1'
         }, 1e3)
       }
       // page three
       else {
         clearTimeout(timerRef.current)
+
+        pageThreeRef.current.style.opacity = '1'
       }
     })
 
@@ -223,7 +231,24 @@ export default function LotusVision() {
   }, [])
 
   /* -------------------------------- displays -------------------------------- */
-  const numbersDisplay = () => {
+  const progressBarDisplay = () => {
+    return (
+      <MotionBox
+        position="fixed"
+        top={0}
+        left={0}
+        right={0}
+        display="inline-block"
+        height="6px"
+        zIndex={99999}
+        transformOrigin="0% center"
+        backgroundColor="rgb(255, 149, 150)"
+        style={{ scaleX: scaleXProgressBar }}
+      />
+    )
+  }
+
+  const pageOneNumbersDisplay = () => {
     return (
       <MotionBox
         opacity={0.7}
@@ -235,102 +260,93 @@ export default function LotusVision() {
         style={{ y: translateYNumbers }}
       >
         {/* 1 */}
-        <NumberDisplay>
-          <svg
+        <PageOneNumberDisplay>
+          <chakra.svg
             viewBox="0 0 224 560"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            css={{
-              position: 'absolute',
-              bottom: 0,
-              left: '2rem',
-              height: '60vh',
-            }}
+            position="absolute"
+            bottom={0}
+            left="2rem"
+            height="60vh"
           >
             <path
               d="M129.2 560H223.6V0H150L140.4 35.2C129.2 76 109.2 88.8 57.2004 88.8H0.400391V176H129.2V560Z"
               fill="#61FEFF"
             ></path>
-          </svg>
-        </NumberDisplay>
+          </chakra.svg>
+        </PageOneNumberDisplay>
 
         {/* 2 */}
-        <NumberDisplay>
-          <svg
+        <PageOneNumberDisplay>
+          <chakra.svg
             viewBox="0 0 403 571"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            css={{
-              position: 'absolute',
-              bottom: 0,
-              left: '2rem',
-              height: '60vh',
-            }}
+            position="absolute"
+            bottom={0}
+            left="2rem"
+            height="60vh"
           >
             <path
               d="M0.599609 571H402.2V484.6H155L289.4 363C361.4 299.8 391.8 236.6 391.8 173.4C391.8 71.0001 311.8 0.600098 199 0.600098C83.7996 0.600098 9.39961 73.4001 6.19961 191.8H94.1996C96.5996 122.2 136.6 83.0001 199 83.0001C259 83.0001 299.8 119.8 299.8 175.8C299.8 215.8 278.2 252.6 231 295.8L0.599609 501.4V571Z"
               fill="#61FEFF"
             ></path>
-          </svg>
-        </NumberDisplay>
+          </chakra.svg>
+        </PageOneNumberDisplay>
 
         {/* 3 */}
-        <NumberDisplay>
-          <svg
+        <PageOneNumberDisplay>
+          <chakra.svg
             viewBox="0 0 398 571"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            css={{
-              position: 'absolute',
-              bottom: 0,
-              left: '2rem',
-              height: '60vh',
-            }}
+            position="absolute"
+            bottom={0}
+            left="2rem"
+            height="60vh"
           >
             <path
               d="M199.6 570.4C318.8 570.4 398 499.2 398 391.2C398 294.4 332.4 225.6 233.2 215.2L378 67.2V0H11.6004V85.6H243.6L104.4 228.8V291.2H199.6C262.8 291.2 304.4 328.8 304.4 386.4C304.4 444 263.6 482.4 199.6 482.4C138 482.4 96.4004 446.4 93.2004 391.2H0.400391C5.20039 500.8 82.8004 570.4 199.6 570.4Z"
               fill="#61FEFF"
             ></path>
-          </svg>
-        </NumberDisplay>
+          </chakra.svg>
+        </PageOneNumberDisplay>
       </MotionBox>
     )
   }
 
-  const textsDisplay = () => {
+  const pageOneTextsDisplay = () => {
     return (
-      <motion.div
-        css={{
-          opacity: 0.7,
-          width: '100%',
-
-          height: '300vh',
-          left: 0,
-          top: 0,
-          position: 'fixed',
-        }}
+      <MotionBox
+        opacity="0.7"
+        width="100%"
+        height="300vh"
+        left={0}
+        top={0}
+        position="fixed"
         style={{ y: translateYTexts }}
       >
         {/* 1 */}
-        <TextDisplay>
+        <PageTwoTextDisplay>
           The Lotus is a burst of purity in muddy waters.
-        </TextDisplay>
+        </PageTwoTextDisplay>
 
         {/* 2 */}
-        <TextDisplay>
+        <PageTwoTextDisplay>
           In a digital world without borders, we are a brand dedicated to{' '}
           <strong>Learning</strong>, the <strong>Frisson</strong> you experience
           as you discover what is possible and the eventual{' '}
           <strong>Growth</strong> this leads to in all aspects of your life.
-        </TextDisplay>
+        </PageTwoTextDisplay>
 
         {/* 2 */}
-        <TextDisplay>
+        <PageTwoTextDisplay>
           We are a community of <strong>optimalists</strong> with a rational
           belief in a better future for ourselves and our community through our
           own efforts.
-        </TextDisplay>
-      </motion.div>
+        </PageTwoTextDisplay>
+      </MotionBox>
     )
   }
 
@@ -338,85 +354,61 @@ export default function LotusVision() {
     return (
       <>
         {/* numbers */}
-        {numbersDisplay()}
+        {pageOneNumbersDisplay()}
 
         {/* texts */}
-        {textsDisplay()}
+        {pageOneTextsDisplay()}
       </>
     )
   }
 
   const pageTwoHeaderDisplay = () => {
     return (
-      <Box
+      <chakra.div
+        ref={pageTwoButtonRef}
+        zIndex={99}
+        opacity={0} // animation
         position="fixed"
         left={0}
         top="2.5rem"
         width="100%"
-        zIndex={9999}
         pointerEvents="none"
         transitionProperty="opacity"
         transitionDuration="0.5s"
-        opacity={0}
-        ref={secondPageButtonsRef}
       >
-        <Box
+        <chakra.div
           position="absolute"
-          width="100%"
-          marginX="auto"
-          transitionProperty="opacity"
-          transitionDuration="0.5s"
-          transform="translateX(-50%)"
           maxWidth="80rem"
           left="50%"
+          display="flex"
+          width="100%"
+          marginLeft="auto"
+          marginRight="auto"
+          transform="translateX(-50%)"
+          gap={{ base: '1rem', xl: '1.5rem' }}
+          paddingX={{ base: '1rem', xl: 0 }}
         >
-          <Box
-            position="absolute"
-            left={0}
-            paddingX={{ base: '1rem', xl: '0' }}
-            display="flex"
-            width="100%"
-            gap={{ base: '1rem', xl: '1.5rem' }}
-          >
-            <Button
-              backgroundColor="rgb(97, 254, 255)"
-              color="rgb(38, 38, 38)"
-              display="inline-flex"
-              alignItems="center"
-              gap="0.25rem"
-              borderRadius="9999px"
-              lineHeight="1.75rem"
-              fontSize="1.25rem"
-              paddingX="1.75rem"
-              paddingY="0.75rem"
-            >
-              Vision
-            </Button>
+          {/* button one */}
+          <RoundedButtonDisplay backgroundColor="rgb(97, 254, 255)">
+            Vision
+          </RoundedButtonDisplay>
 
-            <Button
-              color="rgb(255, 255, 255)"
-              display="inline-flex"
-              alignItems="center"
-              gap="0.25rem"
-              borderRadius="9999px"
-              lineHeight="1.75rem"
-              fontSize="1.25rem"
-              paddingX="1.75rem"
-              paddingY="0.75rem"
-              backgroundColor="transparent"
-              border="1px solid white"
-            >
-              Values
-            </Button>
-          </Box>
-        </Box>
-      </Box>
+          {/* button two */}
+          <RoundedButtonDisplay
+            color="rgb(255, 255, 255)"
+            backgroundColor="transparent"
+            borderColor="white"
+          >
+            Values
+          </RoundedButtonDisplay>
+        </chakra.div>
+      </chakra.div>
     )
   }
 
   const pageTwoCardsDisplay = () => {
     return (
-      <Box
+      <chakra.div
         position="relative"
         width={{ base: '87%', lg: '80%' }}
         transform={{ base: 'translateY(6rem)', lg: 'translateY(0)' }}
@@ -537,72 +529,73 @@ export default function LotusVision() {
             ></path>
           </svg>
         </CardDisplay>
-      </Box>
+      </chakra.div>
     )
   }
 
   const pageTwoDisplay = () => {
     return (
-      <Box
+      <chakra.div
+        ref={pageTwoRef}
         position="fixed"
         top="0"
-        zIndex={999}
         width="100%"
         height="100vh"
         backgroundColor="rgb(48, 48, 48)"
         opacity={0}
-        ref={secondPageRef}
         transitionProperty="opacity"
         transitionTimingFunction="cubic-bezier(0.4, 0, 0.2, 1)"
         transitionDuration="1s"
       >
-        <Box
-          position="fixed"
+        <chakra.div
+          position="relative"
           display="flex"
           flexDirection={{ base: 'column', lg: 'row' }}
           alignItems="center"
           width="100%"
           height="100%"
-          paddingX={{ base: '1rem', xl: '0' }}
-          marginX="auto"
-          paddingTop={{ base: '9rem', lg: '0rem' }}
           maxWidth="80rem"
+          left="50%"
+          transform="translateX(-50%)"
+          paddingX={{ base: '1rem', xl: '0' }}
+          paddingTop={{ base: '9rem', lg: '0rem' }}
         >
-          <Text
+          <chakra.h2
             as="h2"
             fontSize={{ base: '1.5rem', lg: '3.75rem' }}
             lineHeight={{ base: '2rem', lg: 1 }}
             color="rgb(255, 255, 255)"
             margin={0}
             width="100%"
-            zIndex={999}
+            zIndex={9999}
           >
             The Lotus will be the landing page of the new web.
-          </Text>
+          </chakra.h2>
 
           {/* cards */}
           {pageTwoCardsDisplay()}
-        </Box>
-      </Box>
+        </chakra.div>
+      </chakra.div>
     )
   }
 
   const pageThreeDisplay = () => {
     return (
       <MotionBox
+        ref={pageThreeRef}
         position="fixed"
         top={0}
-        zIndex={99999}
+        zIndex={999}
         width="100%"
         height="100vh"
         backgroundColor="white"
         pointerEvents="none"
-        opacity={1}
+        opacity="0"
         initial={{ x: 1.05 * clientWidth }}
         style={{ x: translateXPageThree }}
       >
         {/* buttons */}
-        <Box
+        <chakra.div
           position="absolute"
           width="100%"
           marginX="auto"
@@ -610,50 +603,28 @@ export default function LotusVision() {
           left="50%"
           maxWidth="80rem"
           transform="translateX(-50%)"
+          display="flex"
+          gap={{ base: '1rem', xl: '1.5rem' }}
+          paddingX={{ base: '1rem', xl: '0' }}
         >
-          <Box
-            position="absolute"
-            left={0}
-            display="flex"
-            width="100%"
-            gap={{ base: '1rem', xl: '1.5rem' }}
-            paddingX={{ base: '1rem', xl: '0' }}
+          <RoundedButtonDisplay
+            backgroundColor="rgb(255, 255, 255)"
+            color="rgb(38, 38, 38)"
+            borderColor="black"
           >
-            <Button
-              backgroundColor="rgb(255, 255, 255)"
-              color="rgb(38, 38, 38)"
-              display="inline-flex"
-              alignItems="center"
-              gap="0.25rem"
-              borderRadius="9999px"
-              lineHeight="1.75rem"
-              fontSize="1.25rem"
-              paddingX="1.75rem"
-              paddingY="0.75rem"
-              border="1px solid black"
-            >
-              Vision
-            </Button>
+            Vision
+          </RoundedButtonDisplay>
 
-            <Button
-              color="black"
-              display="inline-flex"
-              alignItems="center"
-              gap="0.25rem"
-              borderRadius="9999px"
-              lineHeight="1.75rem"
-              fontSize="1.25rem"
-              paddingX="1.75rem"
-              paddingY="0.75rem"
-              backgroundColor="rgb(145, 185, 255)"
-            >
-              Values
-            </Button>
-          </Box>
-        </Box>
+          <RoundedButtonDisplay
+            color="black"
+            backgroundColor="rgb(145, 185, 255)"
+          >
+            Values
+          </RoundedButtonDisplay>
+        </chakra.div>
 
         {/* page three */}
-        <Box
+        <chakra.div
           position="relative"
           display="flex"
           flexDirection={{ base: 'column', lg: 'row' }}
@@ -679,7 +650,7 @@ export default function LotusVision() {
           </Text>
 
           {/* cards */}
-          <Box
+          <chakra.div
             position="relative"
             width={{ base: '87%', lg: '80%' }}
             transform={{
@@ -692,7 +663,7 @@ export default function LotusVision() {
             marginRight={{ base: 'auto', lg: '0' }}
           >
             {/* card one */}
-            <PageThreeCardDisplay
+            <CardDisplay
               transformValue={[14 * clientHeight, 12 * clientHeight]}
               translateValue={[-0.2 * clientHeight, 2 * clientHeight]}
               scrollY={scrollY}
@@ -713,7 +684,7 @@ export default function LotusVision() {
                   rx="5.5"
                   fill="#91B9FF"
                   stroke="#222222"
-                  stroke-width="3"
+                  strokeWidth="3"
                 ></rect>
                 <path
                   d="M36.271 51.4H40.495V82.744L38.671 80.968H56.815V85H36.271V51.4ZM69.0828 85.624C66.5868 85.624 64.3628 85.08 62.4108 83.992C60.4908 82.872 58.9868 81.32 57.8988 79.336C56.8428 77.352 56.3148 75.08 56.3148 72.52C56.3148 69.992 56.8588 67.736 57.9468 65.752C59.0348 63.768 60.5388 62.232 62.4588 61.144C64.4108 60.024 66.6348 59.464 69.1308 59.464C71.7548 59.464 74.0428 60.088 75.9948 61.336C77.9788 62.552 79.4828 64.28 80.5068 66.52C81.5308 68.728 82.0108 71.272 81.9468 74.152H58.6668V70.6H79.6908L78.0108 71.272C77.8188 69.64 77.3228 68.216 76.5228 67C75.7228 65.784 74.6828 64.856 73.4028 64.216C72.1548 63.576 70.7308 63.256 69.1308 63.256C67.4348 63.256 65.9148 63.64 64.5708 64.408C63.2268 65.176 62.1708 66.248 61.4028 67.624C60.6668 69 60.2988 70.584 60.2988 72.376V72.52C60.2988 74.376 60.6668 76.008 61.4028 77.416C62.1708 78.824 63.2108 79.912 64.5228 80.68C65.8668 81.448 67.3868 81.832 69.0828 81.832C70.7468 81.832 72.2508 81.48 73.5948 80.776C74.9388 80.072 75.9948 79.064 76.7628 77.752H81.3708C80.3468 80.216 78.7308 82.152 76.5228 83.56C74.3468 84.936 71.8668 85.624 69.0828 85.624ZM94.2771 85.384C92.2931 85.384 90.5651 85.08 89.0931 84.472C87.6531 83.864 86.5491 83 85.7811 81.88C85.0451 80.728 84.6771 79.368 84.6771 77.8C84.6771 75.528 85.4451 73.72 86.9811 72.376C88.5491 71.032 90.6451 70.36 93.2691 70.36H104.597V73.912H93.4131C92.0051 73.912 90.8691 74.264 90.0051 74.968C89.1411 75.672 88.7091 76.6 88.7091 77.752C88.7091 78.968 89.2211 79.944 90.2451 80.68C91.2691 81.416 92.6611 81.784 94.4211 81.784C96.1491 81.784 97.7011 81.448 99.0771 80.776C100.485 80.072 101.573 79.112 102.341 77.896C103.109 76.648 103.493 75.24 103.493 73.672V72.76L103.445 71.992V69.448C103.445 68.168 103.173 67.064 102.629 66.136C102.085 65.176 101.285 64.456 100.229 63.976C99.2051 63.464 98.0051 63.208 96.6291 63.208C95.0291 63.208 93.6371 63.576 92.4531 64.312C91.2691 65.016 90.4691 65.976 90.0531 67.192H85.9731C86.5171 64.792 87.7331 62.904 89.6211 61.528C91.5411 60.152 93.8611 59.464 96.5811 59.464C98.7251 59.464 100.613 59.88 102.245 60.712C103.909 61.512 105.189 62.648 106.085 64.12C107.013 65.592 107.477 67.272 107.477 69.16V85H104.165L103.445 79.336L105.605 78.712C104.901 80.152 104.005 81.384 102.917 82.408C101.829 83.4 100.549 84.152 99.0771 84.664C97.6371 85.144 96.0371 85.384 94.2771 85.384ZM113.483 60.088H116.795L117.467 66.088H116.459C117.355 63.976 118.507 62.456 119.915 61.528C121.355 60.568 123.307 60.088 125.771 60.088H128.027V63.88H125.579C123.115 63.88 121.147 64.648 119.675 66.184C118.235 67.688 117.515 70.104 117.515 73.432V85H113.483V60.088ZM132.036 60.088H135.348L135.924 65.032L135.108 64.744C136.132 62.952 137.476 61.624 139.14 60.76C140.804 59.896 142.612 59.464 144.564 59.464C146.74 59.464 148.612 59.944 150.18 60.904C151.78 61.864 152.996 63.224 153.828 64.984C154.692 66.712 155.124 68.76 155.124 71.128V85H151.092V71.512C151.092 69.016 150.452 67.032 149.172 65.56C147.924 64.056 146.212 63.304 144.036 63.304C142.5 63.304 141.124 63.688 139.908 64.456C138.724 65.224 137.78 66.296 137.076 67.672C136.404 69.048 136.068 70.632 136.068 72.424V85H132.036V60.088ZM161.136 60.088H165.168V85H161.136V60.088ZM163.152 55.96C162.512 55.96 161.936 55.832 161.424 55.576C160.944 55.32 160.56 54.952 160.272 54.472C160.016 53.96 159.888 53.416 159.888 52.84C159.888 51.912 160.176 51.16 160.752 50.584C161.36 49.976 162.16 49.672 163.152 49.672C163.792 49.672 164.352 49.816 164.832 50.104C165.344 50.36 165.728 50.728 165.984 51.208C166.24 51.688 166.368 52.232 166.368 52.84C166.368 53.736 166.064 54.488 165.456 55.096C164.88 55.672 164.112 55.96 163.152 55.96ZM171.673 60.088H174.985L175.561 65.032L174.745 64.744C175.769 62.952 177.113 61.624 178.777 60.76C180.441 59.896 182.249 59.464 184.201 59.464C186.377 59.464 188.249 59.944 189.817 60.904C191.417 61.864 192.633 63.224 193.465 64.984C194.329 66.712 194.761 68.76 194.761 71.128V85H190.729V71.512C190.729 69.016 190.089 67.032 188.809 65.56C187.561 64.056 185.849 63.304 183.673 63.304C182.137 63.304 180.761 63.688 179.545 64.456C178.361 65.224 177.417 66.296 176.713 67.672C176.041 69.048 175.705 70.632 175.705 72.424V85H171.673V60.088ZM211.909 95.224C209.829 95.224 207.941 94.872 206.245 94.168C204.581 93.464 203.221 92.456 202.165 91.144C201.109 89.864 200.437 88.344 200.149 86.584H204.229C204.613 88.12 205.477 89.32 206.821 90.184C208.197 91.048 209.893 91.48 211.909 91.48C213.637 91.48 215.109 91.16 216.325 90.52C217.573 89.88 218.517 88.952 219.157 87.736C219.829 86.552 220.165 85.112 220.165 83.416V77.752L221.941 72.088L220.309 64.792L220.885 60.088H224.197V83.56C224.197 85.896 223.685 87.928 222.661 89.656C221.669 91.416 220.229 92.776 218.341 93.736C216.485 94.728 214.341 95.224 211.909 95.224ZM211.237 84.76C208.901 84.76 206.789 84.216 204.901 83.128C203.013 82.008 201.525 80.488 200.437 78.568C199.349 76.616 198.805 74.456 198.805 72.088C198.805 69.72 199.349 67.576 200.437 65.656C201.525 63.704 203.013 62.184 204.901 61.096C206.789 60.008 208.901 59.464 211.237 59.464C213.573 59.464 215.685 60.008 217.573 61.096C219.461 62.184 220.933 63.704 221.989 65.656C223.045 67.576 223.573 69.72 223.573 72.088C223.573 74.456 223.045 76.616 221.989 78.568C220.933 80.488 219.461 82.008 217.573 83.128C215.685 84.216 213.573 84.76 211.237 84.76ZM211.669 80.824C213.365 80.824 214.885 80.456 216.229 79.72C217.573 78.984 218.613 77.96 219.349 76.648C220.117 75.304 220.501 73.784 220.501 72.088C220.501 70.424 220.117 68.936 219.349 67.624C218.613 66.28 217.573 65.24 216.229 64.504C214.885 63.736 213.365 63.352 211.669 63.352C209.973 63.352 208.453 63.736 207.109 64.504C205.765 65.24 204.709 66.28 203.941 67.624C203.205 68.936 202.837 70.424 202.837 72.088C202.837 73.784 203.205 75.304 203.941 76.648C204.709 77.96 205.765 78.984 207.109 79.72C208.453 80.456 209.973 80.824 211.669 80.824Z"
@@ -724,10 +695,10 @@ export default function LotusVision() {
                   fill="#222222"
                 ></path>
               </Icon>
-            </PageThreeCardDisplay>
+            </CardDisplay>
 
             {/* card two */}
-            <PageThreeCardDisplay
+            <CardDisplay
               transformValue={[16 * clientHeight, 12 * clientHeight]}
               translateValue={[-0.2 * clientHeight, 2 * clientHeight]}
               scrollY={scrollY}
@@ -753,7 +724,7 @@ export default function LotusVision() {
                   rx="5.5"
                   fill="#91B9FF"
                   stroke="#222222"
-                  stroke-width="3"
+                  strokeWidth="3"
                 ></rect>
                 <path
                   d="M36.271 51.3829H55.519V55.3189H38.479L40.495 53.4469V84.9829H36.271V51.3829ZM39.727 66.9349H54.271V70.8229H39.727V66.9349ZM58.939 60.0709H62.251L62.923 66.0709H61.915C62.811 63.9589 63.963 62.4389 65.371 61.5109C66.811 60.5509 68.763 60.0709 71.227 60.0709H73.483V63.8629H71.035C68.571 63.8629 66.603 64.6309 65.131 66.1669C63.691 67.6709 62.971 70.0869 62.971 73.4149V84.9829H58.939V60.0709ZM77.4921 60.0709H81.5241V84.9829H77.4921V60.0709ZM79.5081 55.9429C78.8681 55.9429 78.2921 55.8149 77.7801 55.5589C77.3001 55.3029 76.9161 54.9349 76.6281 54.4549C76.3721 53.9429 76.2441 53.3989 76.2441 52.8229C76.2441 51.8949 76.5321 51.1429 77.1081 50.5669C77.7161 49.9589 78.5161 49.6549 79.5081 49.6549C80.1481 49.6549 80.7081 49.7989 81.1881 50.0869C81.7001 50.3429 82.0841 50.7109 82.3401 51.1909C82.5961 51.6709 82.7241 52.2149 82.7241 52.8229C82.7241 53.7189 82.4201 54.4709 81.8121 55.0789C81.2361 55.6549 80.4681 55.9429 79.5081 55.9429ZM97.0536 85.6069C94.9096 85.6069 93.0056 85.2709 91.3416 84.5989C89.7096 83.8949 88.4456 82.9029 87.5496 81.6229C86.6536 80.3429 86.1896 78.8549 86.1576 77.1589H90.1416C90.2056 78.6949 90.8456 79.8949 92.0616 80.7589C93.2776 81.5909 94.9576 82.0069 97.1016 82.0069C98.9896 82.0069 100.462 81.6869 101.518 81.0469C102.606 80.3749 103.15 79.4789 103.15 78.3589C103.15 77.2389 102.59 76.3269 101.47 75.6229C100.35 74.9189 98.5736 74.3589 96.1416 73.9429C92.9416 73.4309 90.5576 72.5669 88.9896 71.3509C87.4536 70.1349 86.6856 68.5349 86.6856 66.5509C86.6856 64.3429 87.5336 62.6149 89.2296 61.3669C90.9576 60.0869 93.3256 59.4469 96.3336 59.4469C99.4376 59.4469 101.902 60.1349 103.726 61.5109C105.55 62.8869 106.542 64.7909 106.702 67.2229H102.718C102.558 65.8789 101.934 64.8389 100.846 64.1029C99.7576 63.3669 98.2696 62.9989 96.3816 62.9989C94.5896 62.9989 93.1816 63.3189 92.1576 63.9589C91.1656 64.5989 90.6696 65.4789 90.6696 66.5989C90.6696 67.6229 91.1816 68.4389 92.2056 69.0469C93.2296 69.6229 95.0376 70.1669 97.6296 70.6789C100.766 71.3189 103.134 72.2949 104.734 73.6069C106.366 74.9189 107.182 76.5349 107.182 78.4549C107.182 80.5989 106.254 82.3269 104.398 83.6389C102.574 84.9509 100.126 85.6069 97.0536 85.6069ZM120.857 85.6069C118.713 85.6069 116.809 85.2709 115.145 84.5989C113.513 83.8949 112.249 82.9029 111.353 81.6229C110.457 80.3429 109.993 78.8549 109.961 77.1589H113.945C114.009 78.6949 114.649 79.8949 115.865 80.7589C117.081 81.5909 118.761 82.0069 120.905 82.0069C122.793 82.0069 124.265 81.6869 125.321 81.0469C126.409 80.3749 126.953 79.4789 126.953 78.3589C126.953 77.2389 126.393 76.3269 125.273 75.6229C124.153 74.9189 122.377 74.3589 119.945 73.9429C116.745 73.4309 114.361 72.5669 112.793 71.3509C111.257 70.1349 110.489 68.5349 110.489 66.5509C110.489 64.3429 111.337 62.6149 113.033 61.3669C114.761 60.0869 117.129 59.4469 120.137 59.4469C123.241 59.4469 125.705 60.1349 127.529 61.5109C129.353 62.8869 130.345 64.7909 130.505 67.2229H126.521C126.361 65.8789 125.737 64.8389 124.649 64.1029C123.561 63.3669 122.073 62.9989 120.185 62.9989C118.393 62.9989 116.985 63.3189 115.961 63.9589C114.969 64.5989 114.473 65.4789 114.473 66.5989C114.473 67.6229 114.985 68.4389 116.009 69.0469C117.033 69.6229 118.841 70.1669 121.433 70.6789C124.569 71.3189 126.937 72.2949 128.537 73.6069C130.169 74.9189 130.985 76.5349 130.985 78.4549C130.985 80.5989 130.057 82.3269 128.201 83.6389C126.377 84.9509 123.929 85.6069 120.857 85.6069ZM146.868 85.6069C144.34 85.6069 142.068 85.0469 140.052 83.9269C138.068 82.8069 136.5 81.2549 135.348 79.2709C134.228 77.2869 133.668 75.0309 133.668 72.5029C133.668 69.9749 134.228 67.7349 135.348 65.7829C136.5 63.7989 138.068 62.2469 140.052 61.1269C142.068 60.0069 144.34 59.4469 146.868 59.4469C149.396 59.4469 151.652 60.0069 153.636 61.1269C155.652 62.2469 157.22 63.7989 158.34 65.7829C159.492 67.7349 160.068 69.9749 160.068 72.5029C160.068 75.0309 159.492 77.2869 158.34 79.2709C157.22 81.2549 155.652 82.8069 153.636 83.9269C151.652 85.0469 149.396 85.6069 146.868 85.6069ZM146.868 81.7189C148.66 81.7189 150.244 81.3349 151.62 80.5669C153.028 79.7989 154.116 78.7109 154.884 77.3029C155.652 75.8949 156.036 74.2949 156.036 72.5029C156.036 70.7429 155.652 69.1589 154.884 67.7509C154.116 66.3429 153.028 65.2549 151.62 64.4869C150.244 63.6869 148.66 63.2869 146.868 63.2869C145.076 63.2869 143.476 63.6869 142.068 64.4869C140.692 65.2549 139.62 66.3429 138.852 67.7509C138.084 69.1589 137.7 70.7429 137.7 72.5029C137.7 74.2949 138.084 75.8949 138.852 77.3029C139.62 78.7109 140.692 79.7989 142.068 80.5669C143.476 81.3349 145.076 81.7189 146.868 81.7189ZM164.642 60.0709H167.954L168.53 65.0149L167.714 64.7269C168.738 62.9349 170.082 61.6069 171.746 60.7429C173.41 59.8789 175.218 59.4469 177.17 59.4469C179.346 59.4469 181.218 59.9269 182.786 60.8869C184.386 61.8469 185.602 63.2069 186.434 64.9669C187.298 66.6949 187.73 68.7429 187.73 71.1109V84.9829H183.698V71.4949C183.698 68.9989 183.058 67.0149 181.778 65.5429C180.53 64.0389 178.818 63.2869 176.642 63.2869C175.106 63.2869 173.73 63.6709 172.514 64.4389C171.33 65.2069 170.386 66.2789 169.682 67.6549C169.01 69.0309 168.674 70.6149 168.674 72.4069V84.9829H164.642V60.0709Z"
@@ -764,10 +735,10 @@ export default function LotusVision() {
                   fill="#222222"
                 ></path>
               </Icon>
-            </PageThreeCardDisplay>
+            </CardDisplay>
 
             {/* card three */}
-            <PageThreeCardDisplay
+            <CardDisplay
               transformValue={[17.5 * clientHeight, 12 * clientHeight]}
               translateValue={[-0.2 * clientHeight, 2 * clientHeight]}
               scrollY={scrollY}
@@ -793,7 +764,7 @@ export default function LotusVision() {
                   rx="5.5"
                   fill="#91B9FF"
                   stroke="#222222"
-                  stroke-width="3"
+                  strokeWidth="3"
                 ></rect>
                 <path
                   d="M51.247 85.6069C47.983 85.6069 45.055 84.8549 42.463 83.3509C39.871 81.8469 37.823 79.7829 36.319 77.1589C34.847 74.5029 34.111 71.5109 34.111 68.1829C34.111 64.8869 34.847 61.9109 36.319 59.2549C37.791 56.5989 39.807 54.5189 42.367 53.0149C44.959 51.5109 47.887 50.7589 51.151 50.7589C53.679 50.7589 56.031 51.2229 58.207 52.1509C60.415 53.0789 62.303 54.3909 63.871 56.0869C65.439 57.7509 66.575 59.6709 67.279 61.8469H62.719C61.663 59.6709 60.143 57.9909 58.159 56.8069C56.175 55.5909 53.887 54.9829 51.295 54.9829C48.799 54.9829 46.575 55.5429 44.623 56.6629C42.703 57.7829 41.199 59.3509 40.111 61.3669C39.023 63.3509 38.479 65.6229 38.479 68.1829C38.479 70.7429 39.023 73.0309 40.111 75.0469C41.199 77.0629 42.719 78.6309 44.671 79.7509C46.623 80.8389 48.847 81.3829 51.343 81.3829C53.679 81.3829 55.759 80.9029 57.583 79.9429C59.407 78.9509 60.863 77.5909 61.951 75.8629C63.071 74.1029 63.711 72.0869 63.871 69.8149L65.551 70.8229H50.095V66.7429H68.335C68.399 70.3909 67.711 73.6549 66.271 76.5349C64.863 79.3829 62.847 81.6069 60.223 83.2069C57.631 84.8069 54.639 85.6069 51.247 85.6069ZM73.0484 60.0709H76.3604L77.0324 66.0709H76.0244C76.9204 63.9589 78.0724 62.4389 79.4804 61.5109C80.9204 60.5509 82.8724 60.0709 85.3364 60.0709H87.5924V63.8629H85.1444C82.6804 63.8629 80.7124 64.6309 79.2404 66.1669C77.8004 67.6709 77.0804 70.0869 77.0804 73.4149V84.9829H73.0484V60.0709ZM100.865 85.6069C98.3368 85.6069 96.0648 85.0469 94.0488 83.9269C92.0648 82.8069 90.4968 81.2549 89.3448 79.2709C88.2248 77.2869 87.6648 75.0309 87.6648 72.5029C87.6648 69.9749 88.2248 67.7349 89.3448 65.7829C90.4968 63.7989 92.0648 62.2469 94.0488 61.1269C96.0648 60.0069 98.3368 59.4469 100.865 59.4469C103.393 59.4469 105.649 60.0069 107.633 61.1269C109.649 62.2469 111.217 63.7989 112.337 65.7829C113.489 67.7349 114.065 69.9749 114.065 72.5029C114.065 75.0309 113.489 77.2869 112.337 79.2709C111.217 81.2549 109.649 82.8069 107.633 83.9269C105.649 85.0469 103.393 85.6069 100.865 85.6069ZM100.865 81.7189C102.657 81.7189 104.241 81.3349 105.617 80.5669C107.025 79.7989 108.113 78.7109 108.881 77.3029C109.649 75.8949 110.033 74.2949 110.033 72.5029C110.033 70.7429 109.649 69.1589 108.881 67.7509C108.113 66.3429 107.025 65.2549 105.617 64.4869C104.241 63.6869 102.657 63.2869 100.865 63.2869C99.0728 63.2869 97.4728 63.6869 96.0648 64.4869C94.6888 65.2549 93.6168 66.3429 92.8488 67.7509C92.0808 69.1589 91.6968 70.7429 91.6968 72.5029C91.6968 74.2949 92.0808 75.8949 92.8488 77.3029C93.6168 78.7109 94.6888 79.7989 96.0648 80.5669C97.4728 81.3349 99.0728 81.7189 100.865 81.7189ZM113.913 60.0709H118.185L122.169 71.3509L125.817 81.7669H123.753L127.785 71.3509L132.057 60.0709H135.753L140.121 71.3509L144.105 81.6709H142.089L145.689 71.3509L149.721 60.0709H153.945L145.017 84.9829H141.129L137.193 74.7109L132.969 63.5269H134.841L130.617 74.7109L126.729 84.9829H122.841L113.913 60.0709ZM167.585 84.9829C164.833 84.9829 162.689 84.1989 161.153 82.6309C159.649 81.0629 158.897 78.8549 158.897 76.0069V62.7109L159.809 63.7669H153.665V60.0709H156.161C156.961 60.0709 157.569 59.9909 157.985 59.8309C158.433 59.6389 158.753 59.3509 158.945 58.9669C159.169 58.5829 159.329 58.0069 159.425 57.2389L159.809 53.8789H162.929V61.0789L161.729 60.0709H170.993V63.7669H162.017L162.929 62.7109V75.8149C162.929 77.6389 163.313 78.9829 164.081 79.8469C164.881 80.6789 166.113 81.0949 167.777 81.0949H171.329V84.9829H167.585ZM175.761 49.4629H179.793V64.9669L178.833 64.7269C179.857 62.9669 181.201 61.6549 182.865 60.7909C184.529 59.8949 186.353 59.4469 188.337 59.4469C190.513 59.4469 192.385 59.9109 193.953 60.8389C195.521 61.7669 196.721 63.0949 197.553 64.8229C198.417 66.5509 198.849 68.5989 198.849 70.9669V84.9829H194.817V71.3509C194.817 68.8549 194.193 66.8869 192.945 65.4469C191.697 64.0069 189.969 63.2869 187.761 63.2869C186.225 63.2869 184.849 63.6549 183.633 64.3909C182.417 65.1269 181.473 66.1829 180.801 67.5589C180.129 68.9029 179.793 70.4709 179.793 72.2629V84.9829H175.761V49.4629Z"
@@ -804,52 +775,37 @@ export default function LotusVision() {
                   fill="#222222"
                 ></path>
               </Icon>
-            </PageThreeCardDisplay>
-          </Box>
-        </Box>
+            </CardDisplay>
+          </chakra.div>
+        </chakra.div>
       </MotionBox>
     )
   }
 
   /* ---------------------------------- main ---------------------------------- */
   return (
-    <Box
-      pos="relative"
-      w="100vw"
+    <chakra.div
+      position="relative"
+      width="100vw"
       overflow="scroll"
       backgroundColor="white"
       color="black"
+      height="2200vh"
     >
-      <Box zIndex={99} position="relative">
-        {/* 22 empty divs to set height of container */}
-        {Array(22)
-          .fill(0)
-          .map((_, i) => {
-            return (
-              <Box
-                position="relative"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                h="100vh"
-                css={{ perspective: '500px' }}
-                key={i}
-              />
-            )
-          })}
+      {/* progress bar */}
+      {progressBarDisplay()}
 
-        {/* page one */}
-        {pageOneDisplay()}
+      {/* page one */}
+      {pageOneDisplay()}
 
-        {/* page two header buttons */}
-        {pageTwoHeaderDisplay()}
+      {/* page two header buttons */}
+      {pageTwoHeaderDisplay()}
 
-        {/* page two */}
-        {pageTwoDisplay()}
+      {/* page two */}
+      {pageTwoDisplay()}
 
-        {/* page three */}
-        {pageThreeDisplay()}
-      </Box>
-    </Box>
+      {/* page three */}
+      {pageThreeDisplay()}
+    </chakra.div>
   )
 }
