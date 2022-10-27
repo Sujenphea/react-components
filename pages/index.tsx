@@ -139,8 +139,8 @@ export default function Home() {
           </AnimatedGradientGlowButton>
         )}
 
-        {/* <LotusHomePage /> */}
-        <LotusVision />
+        <LotusHomePage />
+        {/* <LotusVision /> */}
       </div>
     )
   }

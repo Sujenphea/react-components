@@ -30,6 +30,6 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  color: pink;
-}
+/* button:hover { */
+/* color: pink; */
+/* } */
