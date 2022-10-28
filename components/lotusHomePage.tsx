@@ -10,6 +10,7 @@ import {
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
 import { ReactNode, useEffect, useRef, useState } from 'react'
+import Marquee from 'react-fast-marquee'
 // disable scroll: https://github.com/willmcpo/body-scroll-lock
 
 /* -------------------------------------------------------------------------- */
@@ -54,6 +55,54 @@ const navList = [
 /* -------------------------------------------------------------------------- */
 /*                                  displays                                  */
 /* -------------------------------------------------------------------------- */
+const LoadingCursor = () => {
+  const loadingCursorRef = useRef<HTMLDivElement>(null!)
+
+  /* --------------------------------- effects -------------------------------- */
+  // change location
+  useEffect(() => {
+    const handleMouseMove = (t: MouseEvent) => {
+      loadingCursorRef.current.style.opacity = '1'
+      loadingCursorRef.current.style.left = t.clientX + 'px'
+      loadingCursorRef.current.style.top = t.clientY + 'px'
+    }
+
+    const handleMouseLeave = () => {
+      loadingCursorRef.current.style.opacity = '0'
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseleave', handleMouseLeave)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  })
+
+  /* ---------------------------------- main ---------------------------------- */
+  return (
+    <chakra.div
+      ref={loadingCursorRef}
+      position="fixed"
+      top="500px"
+      opacity={0}
+      zIndex={60}
+      paddingY="0.25rem"
+      paddingX="0"
+      fontSize="0.75rem"
+      lineHeight="1rem"
+      textColor="rgb(23, 23, 23)"
+      textTransform="uppercase"
+      backgroundColor="rgb(255, 212, 98)"
+    >
+      <Marquee speed={120} gradient={false}>
+        Loading
+      </Marquee>
+    </chakra.div>
+  )
+}
+
 const HeaderItem = (props: {
   child?: boolean
   transitionDelay?: string
@@ -248,6 +297,7 @@ const RoundedBoxDisplay = (props: {
       textAlign="center"
       padding={{ base: '2rem', lg: '4rem' }}
       borderRadius="1rem"
+      opacity={0} // animation
       backgroundColor={props.backgroundColor ?? 'white'}
     >
       {props.children}
@@ -391,11 +441,11 @@ export default function LotusHomePage() {
   /* --------------------------------- states --------------------------------- */
   const [clientHeight, setClientHeight] = useState(0)
   const [clientWidth, setClientWidth] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   const loadingDivRef = useRef<HTMLDivElement>(null!)
 
   /* --------------------------------- effects -------------------------------- */
-
   useEffect(() => {
     setClientHeight(window.innerHeight)
     setClientWidth(window.innerWidth)
@@ -439,10 +489,46 @@ export default function LotusHomePage() {
             '-=75%'
           )
       })
+
+      setLoading(false)
     }, 2e3)
+
+    // trigger animations
+    setTimeout(() => {
+      gsap.to('#collections div', {
+        scrollTrigger: {
+          trigger: '#collections div',
+          start: 'top 140%',
+          toggleActions: 'restart none none reverse',
+        },
+        opacity: 1,
+        stagger: 0.25,
+      })
+
+      gsap.to('#eligibility-content div', {
+        scrollTrigger: {
+          trigger: '#eligibility',
+          start: 'top 130%',
+          toggleActions: 'restart none none reverse',
+        },
+        opacity: 1,
+        stagger: 0.25,
+      })
+
+      gsap.to('.merchContent', {
+        scrollTrigger: {
+          trigger: '#merch',
+          start: 'top 130%',
+          toggleActions: 'restart none none reverse',
+        },
+        opacity: 1,
+        stagger: 0.25,
+      })
+    }, 1e3)
   }, [])
 
   /* --------------------------------- display -------------------------------- */
+
   const loadingDisplay = () => {
     return (
       <chakra.div
@@ -784,6 +870,7 @@ export default function LotusHomePage() {
   const pageTwoDisplay = () => {
     return (
       <chakra.div
+        id="collections"
         display="flex"
         flexDirection={{ base: 'column', lg: 'row' }}
         minHeight={{ lg: '100vh' }}
@@ -934,6 +1021,7 @@ export default function LotusHomePage() {
   const eligibilityDisplay = () => {
     return (
       <chakra.div
+        id="eligibility"
         position="relative"
         minHeight={{ lg: '100vh' }}
         width="100%"
@@ -951,13 +1039,17 @@ export default function LotusHomePage() {
       >
         {/* grid */}
         <chakra.div
+          id="eligibility-content"
           width="100%"
           gridTemplateColumns="repeat(6, minmax(0, 1fr))"
           gap="1rem"
           display={{ lg: 'grid' }}
         >
           {/* left: title */}
-          <chakra.div gridColumn="span 4/span 4">
+          <chakra.div
+            gridColumn="span 4/span 4"
+            opacity={0} // animation
+          >
             <chakra.h2
               fontSize={{ base: '3rem', md: '4.5rem', lg: '90px' }}
               lineHeight={1}
@@ -968,6 +1060,7 @@ export default function LotusHomePage() {
 
           {/* right: content */}
           <chakra.div
+            opacity={0} // animation
             marginTop={{ base: '4rem', lg: '0' }}
             display="flex"
             flexDirection="column"
@@ -1053,6 +1146,7 @@ export default function LotusHomePage() {
   const lotusGangMerchDisplay = () => {
     return (
       <chakra.div
+        id="merch"
         paddingX={{ base: '1rem', lg: '4rem' }}
         paddingY="4rem"
         backgroundColor="white"
@@ -1071,6 +1165,8 @@ export default function LotusHomePage() {
             <chakra.h2
               fontSize={{ base: '3rem', lg: '3.75rem' }}
               fontWeight={700}
+              className="merchContent" // animation
+              opacity={0} // animation
             >
               Lotus Gang Merch
             </chakra.h2>
@@ -1082,6 +1178,8 @@ export default function LotusHomePage() {
               width={{ lg: '75%' }}
               fontSize={{ lg: '1.125rem' }}
               lineHeight={{ lg: '1.75rem' }}
+              className="merchContent" // animation
+              opacity={0} // animation
             >
               <chakra.span fontStyle="italic">Sources</chakra.span> say this is
               the best merch in Web3. Each purchase comes with a bag of goodies.
@@ -1100,6 +1198,8 @@ export default function LotusHomePage() {
               cursor="help"
               backgroundColor="transparent"
               border="1px solid rgb(48, 48, 48)"
+              className="merchContent" // animation
+              opacity={0} // animation
             >
               Coming soon...
             </chakra.button>
@@ -1107,11 +1207,13 @@ export default function LotusHomePage() {
 
           {/* right */}
           <chakra.img
+            className="merchContent" // animation
+            opacity={0} // animation
             marginTop={{ base: '4rem', lg: '0' }}
             src="./lotus-gang-hoody.webp"
             maxWidth="100%"
             verticalAlign="middle"
-          ></chakra.img>
+          />
         </chakra.div>
       </chakra.div>
     )
@@ -1122,6 +1224,8 @@ export default function LotusHomePage() {
     <chakra.div>
       {/* loading */}
       {loadingDisplay()}
+
+      {loading ? <LoadingCursor /> : null}
 
       {/* header */}
       {headerDisplay()}
