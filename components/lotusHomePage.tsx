@@ -64,7 +64,7 @@ const LoadingCursor = () => {
     const handleMouseMove = (t: MouseEvent) => {
       if (
         loadingCursorRef.current !== undefined &&
-        loadingCursorRef.current.style !== null
+        loadingCursorRef.current.style
       ) {
         loadingCursorRef.current.style.opacity = '1'
         loadingCursorRef.current.style.left = t.clientX + 'px'
@@ -75,7 +75,7 @@ const LoadingCursor = () => {
     const handleMouseLeave = () => {
       if (
         loadingCursorRef.current !== undefined &&
-        loadingCursorRef.current.style !== null
+        loadingCursorRef.current.style
       ) {
         loadingCursorRef.current.style.opacity = '0'
       }
