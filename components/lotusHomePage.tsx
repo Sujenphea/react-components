@@ -520,7 +520,7 @@ export default function LotusHomePage() {
       gsap.to('#eligibility-content div', {
         scrollTrigger: {
           trigger: '#eligibility',
-          start: 'top 100%',
+          start: 'top 110%',
           toggleActions: 'restart none none reverse',
         },
         opacity: 1,
@@ -530,7 +530,7 @@ export default function LotusHomePage() {
       gsap.to('.merchContent', {
         scrollTrigger: {
           trigger: '#merch',
-          start: 'top 120%',
+          start: 'top 110%',
           toggleActions: 'restart none none reverse',
         },
         opacity: 1,
