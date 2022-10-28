@@ -240,7 +240,7 @@ export default function LotusVision() {
         right={0}
         display="inline-block"
         height="6px"
-        zIndex={99999}
+        zIndex={1}
         transformOrigin="0% center"
         backgroundColor="rgb(255, 149, 150)"
         style={{ scaleX: scaleXProgressBar }}
@@ -366,7 +366,6 @@ export default function LotusVision() {
     return (
       <chakra.div
         ref={pageTwoButtonRef}
-        zIndex={99}
         opacity={0} // animation
         position="fixed"
         left={0}
@@ -560,6 +559,9 @@ export default function LotusVision() {
           paddingX={{ base: '1rem', xl: '0' }}
           paddingTop={{ base: '9rem', lg: '0rem' }}
         >
+          {/* page two header buttons */}
+          {pageTwoHeaderDisplay()}
+
           <chakra.h2
             as="h2"
             fontSize={{ base: '1.5rem', lg: '3.75rem' }}
@@ -567,7 +569,6 @@ export default function LotusVision() {
             color="rgb(255, 255, 255)"
             margin={0}
             width="100%"
-            zIndex={9999}
           >
             The Lotus will be the landing page of the new web.
           </chakra.h2>
@@ -585,7 +586,6 @@ export default function LotusVision() {
         ref={pageThreeRef}
         position="fixed"
         top={0}
-        zIndex={999}
         width="100%"
         height="100vh"
         backgroundColor="white"
@@ -641,7 +641,6 @@ export default function LotusVision() {
             fontSize={{ base: '1.5rem', lg: '3.75rem' }}
             lineHeight={{ base: '2rem', lg: '1' }}
             color="rgb(48, 48, 48)"
-            zIndex={999}
             width="100%"
             paddingRight={{ base: 'default', lg: '5rem' }}
           >
@@ -797,9 +796,6 @@ export default function LotusVision() {
 
       {/* page one */}
       {pageOneDisplay()}
-
-      {/* page two header buttons */}
-      {pageTwoHeaderDisplay()}
 
       {/* page two */}
       {pageTwoDisplay()}

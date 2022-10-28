@@ -62,13 +62,23 @@ const LoadingCursor = () => {
   // change location
   useEffect(() => {
     const handleMouseMove = (t: MouseEvent) => {
-      loadingCursorRef.current.style.opacity = '1'
-      loadingCursorRef.current.style.left = t.clientX + 'px'
-      loadingCursorRef.current.style.top = t.clientY + 'px'
+      if (
+        loadingCursorRef.current !== undefined &&
+        loadingCursorRef.current.style !== null
+      ) {
+        loadingCursorRef.current.style.opacity = '1'
+        loadingCursorRef.current.style.left = t.clientX + 'px'
+        loadingCursorRef.current.style.top = t.clientY + 'px'
+      }
     }
 
     const handleMouseLeave = () => {
-      loadingCursorRef.current.style.opacity = '0'
+      if (
+        loadingCursorRef.current !== undefined &&
+        loadingCursorRef.current.style !== null
+      ) {
+        loadingCursorRef.current.style.opacity = '0'
+      }
     }
 
     document.addEventListener('mousemove', handleMouseMove)
@@ -87,7 +97,6 @@ const LoadingCursor = () => {
       position="fixed"
       top="500px"
       opacity={0}
-      zIndex={60}
       paddingY="0.25rem"
       paddingX="0"
       fontSize="0.75rem"
@@ -339,7 +348,6 @@ const FooterDisplay = () => {
       id="footer"
       width="100%"
       padding="2rem"
-      zIndex={9999}
       position="relative"
       backgroundColor="rgb(97, 254, 255)"
       color="black"
@@ -445,6 +453,10 @@ export default function LotusHomePage() {
 
   const loadingDivRef = useRef<HTMLDivElement>(null!)
 
+  // header scroll refs
+  const [prevScrollY, setPrevScrollY] = useState(0)
+  const [scrollDirection, setScrollDirection] = useState('')
+
   /* --------------------------------- effects -------------------------------- */
   useEffect(() => {
     setClientHeight(window.innerHeight)
@@ -525,6 +537,33 @@ export default function LotusHomePage() {
         stagger: 0.25,
       })
     }, 1e3)
+
+    // track scroll
+    // - show/hide header
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+
+      setPrevScrollY((x) => {
+        // only hide when past 50px
+        if (scrollY > x && scrollY > 50) {
+          setScrollDirection('down')
+        }
+        // only add backgroundColor if past 50px
+        else if (scrollY < x && scrollY > 50) {
+          setScrollDirection('up')
+        }
+        // reset any styling
+        else {
+          setScrollDirection('')
+        }
+
+        return scrollY
+      })
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   /* --------------------------------- display -------------------------------- */
@@ -534,7 +573,6 @@ export default function LotusHomePage() {
       <chakra.div
         position="fixed"
         top={0}
-        zIndex={50} // zIndex = {50} loading
         opacity={1}
         width="100vw"
         height="100vh"
@@ -646,9 +684,12 @@ export default function LotusHomePage() {
       <chakra.div
         id="header"
         opacity={0}
-        zIndex={9999}
+        zIndex={1}
         position="fixed"
-        top={0}
+        top={scrollDirection === 'down' ? '-160px' : 0}
+        backgroundColor={
+          scrollDirection === 'up' ? 'hsla(0, 0%, 100%, 0.9)' : 'inherit'
+        }
         width="100%"
         paddingX={{ base: '1rem', lg: '2rem' }}
         paddingY="1rem"
@@ -722,7 +763,6 @@ export default function LotusHomePage() {
   const bottomScrollDisplay = () => {
     return (
       <chakra.div
-        zIndex={999999}
         position="absolute"
         top="90vh"
         width="100%"
