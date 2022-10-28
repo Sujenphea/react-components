@@ -1,6 +1,8 @@
 import { css } from '@emotion/react'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
+import LotusHomePage from '../components/lotusHomePage'
+import LotusVision from '../components/lotusVision'
 
 const AnimatedGlowButton = dynamic(
   () => import('../components/animatedGlowButton'),
@@ -98,7 +100,7 @@ export default function Home() {
       <div
         css={css({
           width: '100vw',
-          height: '100vh',
+          // height: '100vh',
 
           display: 'flex',
           justifyContent: 'center',
@@ -136,6 +138,9 @@ export default function Home() {
             </div>
           </AnimatedGradientGlowButton>
         )}
+
+        <LotusHomePage />
+        {/* <LotusVision /> */}
       </div>
     )
   }
@@ -202,7 +207,7 @@ export default function Home() {
   return (
     <>
       {/* nav bar */}
-      {navBarDisplay()}
+      {/* {navBarDisplay()} */}
 
       {/* components */}
       {componentsDisplay()}
